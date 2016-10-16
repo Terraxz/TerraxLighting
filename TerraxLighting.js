@@ -1,13 +1,14 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.1
+// Version: 1.3.2
 //=============================================================================
 //
 // This script overwrites the following core scripts.
-// Scene_Load.prototype.onSavefileOk
-// Game_CharacterBase.prototype.updateMove
+//
 // Spriteset_Map.prototype.createLowerLayer
+// Game_CharacterBase.prototype.setDirection
+// Game_CharacterBase.prototype.updateMove
 
 //=============================================================================
  /*:
