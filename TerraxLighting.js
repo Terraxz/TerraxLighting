@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.2
+// Version: 1.3.3
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.3.2 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.3.3 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -184,8 +184,8 @@ Imported.TerraxLighting = true;
 (function() {
 
 	var parameters = PluginManager.parameters('TerraxLighting');
-    var player_radius = Number(parameters['Player radius'] || 300);	
-	var reset_each_map = parameters['Reset Lights'] || No;  
+    var player_radius = Number(parameters['Player radius']);
+	var reset_each_map = parameters['Reset Lights'] || No;
 	var daynightsavehours = Number(parameters['Save DaynightHours'] || 10);
 	var daynightsavemin = Number(parameters['Save DaynightMinutes'] || 11);
 	var daynightsavesec = Number(parameters['Save DaynightSeconds'] || 12);
@@ -209,6 +209,7 @@ Imported.TerraxLighting = true;
 	var daynightdebug = false;
 	var terrax_tint_speed_old = 60;
 	var terrax_tint_target_old = '#000000'
+	var firstrun = true;
 
     var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
@@ -861,8 +862,8 @@ Imported.TerraxLighting = true;
 			            var note_args = note.split(" ");
 			    		var note_command = note_args.shift().toLowerCase();    		
 			            if (note_command == "light" || note_command == "fire" || note_command == "daynight" || note_command == "flashlight" ) {			
-							this._addSprite(0,0,this._maskBitmap); // light event? yes.. then turn off the lights
-							//this._addSprite(-10,0,this._shakeBitmap);
+							this._addSprite(-20,0,this._maskBitmap); // light event? yes.. then turn off the lights
+
 							break;
 						}
 					}
@@ -871,7 +872,12 @@ Imported.TerraxLighting = true;
 		
 			// ******** GROW OR SHRINK GLOBE *********
 
-			player_radius = $gameVariables.GetRadius();
+			if (firstrun === true) {
+				firstrun = false;
+				$gameVariables.SetRadius(player_radius);
+			} else {
+				player_radius = $gameVariables.GetRadius();
+			}
 			var lightgrow_value = player_radius;
 			var lightgrow_target = $gameVariables.GetRadiusTarget();
 			var lightgrow_speed = $gameVariables.GetRadiusSpeed();
@@ -942,6 +948,7 @@ Imported.TerraxLighting = true;
 				if (playerflashlight == true) {
 					this._maskBitmap.radialgradientFillRect2(x1,y1, 20, iplayer_radius, playercolor, 'black', pd, flashlightlength, flashlightwidth);
 				}
+				y1 = y1 - flashlightoffset;
 				if (iplayer_radius < 100){
 					// dim the light a bit at lower lightradius for a less focused effect.
 					var r = hexToRgb(playercolor).r;
@@ -954,7 +961,7 @@ Imported.TerraxLighting = true;
 					if (r<0) { r = 0; }
 					if (b<0) { b = 0; }						
 		  			var newcolor = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-		  				
+
 					this._maskBitmap.radialgradientFillRect(x1,y1, 0, iplayer_radius, newcolor, 'black', playerflicker,playerbrightness);
 				} else { 	
 					this._maskBitmap.radialgradientFillRect(x1,y1, 20, iplayer_radius, playercolor, 'black', playerflicker,playerbrightness);
@@ -1138,8 +1145,9 @@ Imported.TerraxLighting = true;
 					            		if (tldir == 1) {ldir = 8}
 					            		if (tldir == 2) {ldir = 6}
 					            		if (tldir == 3) {ldir = 2}
-					            		if (tldir == 4) {ldir = 4}	
-				            		}     
+					            		if (tldir == 4) {ldir = 4}
+
+									}
 
 								}
 								//Graphics.Debug('ldir',ldir);	
@@ -1476,6 +1484,8 @@ Imported.TerraxLighting = true;
 	// *******************  NORMAL BOX SHAPE ***********************************
 	
 	Bitmap.prototype.FillRect = function(x1, y1, x2, y2, color1) {
+		x1=x1+20;
+		x2=x2+20;
 	    var context = this._context;
 	    context.save();
 	    context.fillStyle = color1;
@@ -1487,6 +1497,8 @@ Imported.TerraxLighting = true;
 	// *******************  CIRCLE/OVAL SHAPE ***********************************
 	// from http://scienceprimer.com/draw-oval-html5-canvas
 	Bitmap.prototype.FillCircle = function(centerX, centerY, xradius, yradius, color1) {
+		centerX=centerX+20;
+
 	    var context = this._context;
 	    context.save();
 	    context.fillStyle = color1;
@@ -1514,6 +1526,8 @@ Imported.TerraxLighting = true;
 	// Fill gradient circle
 	
 	Bitmap.prototype.radialgradientFillRect = function(x1, y1, r1, r2, color1, color2, flicker, brightness, direction) {
+		x1=x1+20;
+
 		if (!brightness) { brightness = 0.0; }
 		if (!direction) {direction = 0; }
 	    var context = this._context;
@@ -1574,6 +1588,8 @@ Imported.TerraxLighting = true;
 	// Fill gradient Cone
 	
 	Bitmap.prototype.radialgradientFillRect2 = function(x1, y1, r1, r2, color1, color2, direction, flashlength, flashwidth) {
+		x1=x1+20;
+
 	    var context = this._context;
 	    var grad;	
 	    
@@ -1914,7 +1930,7 @@ Imported.TerraxLighting = true;
 					if (idfound == false) {
 						move_event_id.push(evid);
 						move_event_x.push(this._realX);
-						move_event_y.push(this._realY);	
+						move_event_y.push(this._realY);
 						move_event_dir.push(this._direction);
 					}
 				}
