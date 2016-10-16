@@ -213,473 +213,508 @@ Imported.TerraxLighting = true;
     var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
         _Game_Interpreter_pluginCommand.call(this, command, args);
-        command = command.toLowerCase();
-              
+		if (typeof command != 'undefined') {
+			command = command.toLowerCase();
 
-        // ************* TILE TAGS ***************
-        if (command === 'tileblock' || command === 'regionblock' || command === 'tilelight' || command === 'regionlight' || command === 'tilefire' || command === 'regionfire') {
+			// ************* TILE TAGS ***************
+			if (command === 'tileblock' || command === 'regionblock' || command === 'tilelight' || command === 'regionlight' || command === 'tilefire' || command === 'regionfire') {
 
-			var tilearray = $gameVariables.GetTileArray();
+				var tilearray = $gameVariables.GetTileArray();
 
-			var tiletype = 0;
-	        if (command === 'tileblock') { tiletype = 1; }
-	        if (command === 'regionblock') { tiletype = 2; }
-	  	    if (command === 'tilelight') { tiletype = 3; }
-	  	    if (command === 'regionlight') { tiletype = 4; }	
-	  	    if (command === 'tilefire') { tiletype = 5; }
-	  	    if (command === 'regionfire') { tiletype = 6; }	  	            
-	 		var tilenumber = Number(args[0]);
- 			var tile_on = 0;
- 			if (args[1] === 'on' || args[1] === 'ON') {
- 				tile_on = 1;
-		 	} 
-	 		var tilecolor = args[2];
-	 		var isValidColor1  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tilecolor);
-	 		if (!isValidColor1) {
-		 		if ( tiletype === 1 || tiletype === 2) {
-	 				tilecolor = '#000000';
- 				} else {
-	 				tilecolor = '#FFFFFF';
- 				}
-			}
-			
-			var tileradius = 100;
-			var tilebrightness = 0.0;
-			var shape = 0;
-			var x1 = 0;
-			var y1 = 0;
-			var x2 = 0;
-			var y2 = 0;
-			if ( tiletype === 1 || tiletype === 2) {
-					if (args.length > 3) { shape = args[3]; }
-					if (args.length > 4) { x1 = args[4]; }
-					if (args.length > 5) { y1 = args[5]; }
-					if (args.length > 6) { x2 = args[6]; }
-					if (args.length > 7) { y2 = args[7]; }
-			} else {
-					if (args.length > 3) { tileradius = args[3]; }
-					if (args.length > 4) { tilebrightness = args[4]; }
-			} 
-			
-			var tilefound = false;
-			
-			for (var i = 0; i < tilearray.length; i++) {
-				var tilestr = tilearray[i];
-				var tileargs = tilestr.split(";");
-				if (tileargs[0] == tiletype && tileargs[1] == tilenumber ) {
-					tilefound = true;
-					if ( tiletype === 1 || tiletype === 2) {
-						tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + shape + ";" + x1 + ";" + y1 + ";" + x2 + ";" + y2;
+				var tiletype = 0;
+				if (command === 'tileblock') {
+					tiletype = 1;
+				}
+				if (command === 'regionblock') {
+					tiletype = 2;
+				}
+				if (command === 'tilelight') {
+					tiletype = 3;
+				}
+				if (command === 'regionlight') {
+					tiletype = 4;
+				}
+				if (command === 'tilefire') {
+					tiletype = 5;
+				}
+				if (command === 'regionfire') {
+					tiletype = 6;
+				}
+				var tilenumber = Number(args[0]);
+				var tile_on = 0;
+				if (args[1] === 'on' || args[1] === 'ON') {
+					tile_on = 1;
+				}
+				var tilecolor = args[2];
+				var isValidColor1 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tilecolor);
+				if (!isValidColor1) {
+					if (tiletype === 1 || tiletype === 2) {
+						tilecolor = '#000000';
 					} else {
-						tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
-					}	
-						//Graphics.Debug('Set',tilearray[i]);
+						tilecolor = '#FFFFFF';
+					}
 				}
-			}
-			
-			if (tilefound === false) {
-				var tiletag = "";
-				if ( tiletype === 1 || tiletype === 2) {
-					tiletag = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + shape + ";" + x1 + ";" + y1 + ";" + x2 + ";" + y2;
+
+				var tileradius = 100;
+				var tilebrightness = 0.0;
+				var shape = 0;
+				var x1 = 0;
+				var y1 = 0;
+				var x2 = 0;
+				var y2 = 0;
+				if (tiletype === 1 || tiletype === 2) {
+					if (args.length > 3) {
+						shape = args[3];
+					}
+					if (args.length > 4) {
+						x1 = args[4];
+					}
+					if (args.length > 5) {
+						y1 = args[5];
+					}
+					if (args.length > 6) {
+						x2 = args[6];
+					}
+					if (args.length > 7) {
+						y2 = args[7];
+					}
 				} else {
-					tiletag = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
-				}
-				tilearray.push(tiletag);	
-				//Graphics.Debug('Push',tiletag);			
-			}	 
-			$gameVariables.SetTileArray(tilearray);
-	          
-    	}
-
-	    // ************* TINT  *******************        
-        if (command === 'tint') {
-	     
-        	if (args[0] === 'set') { 
-	        	//var tint_value = args[1];
-	        	$gameVariables.SetTint(args[1]);
-				$gameVariables.SetTintTarget(args[1]);
-        	}  
-        	if (args[0] === 'fade') { 
-	        	//var Tint_target = args[1];
-	        	//var Tint_speed = args[2];
-	        	$gameVariables.SetTintTarget(args[1]);
-				$gameVariables.SetTintSpeed(args[2]);
-        	}	      
-        	
-           // Graphics.Debug('TINT',args[1]+' '+args[1]+' '+args[2]);
-    	}
-    	
- 	    // ************* MOGHUNTER TIMESYSTEM COMPATIBLE  *******************        
-        if (command === 'tls_moghunter') {
-        	if (args[0] === 'on') { 
-	        	//moghunter = true;
-        		$gameVariables.SetMog(true);
-        	}  
-        	if (args[0] === 'off') {
-	        	//moghunter = false
-	        	$gameVariables.SetTint('#000000');
-				$gameVariables.SetMog(false);
-        	}	      
-        	if (args[0] === 'tint') { 
-	        		
-	        	if (args.length = 7) {
-					var mogtint =  $gameVariables.GetMogTintArray();
-					for (var i = 0; i <= 5; i++) {
-						var tintcolor = args[i];
-	    			 	var isValidColor3  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tintcolor);
-						if (isValidColor3 == true) {
-							mogtint[i] = tintcolor;
-							$gameVariables.SetMogTintArray(mogtint);
-						}
+					if (args.length > 3) {
+						tileradius = args[3];
 					}
-	    		}
-        	} 
-    	}
-	
-        // ************* DAYNIGHT *******************
-        if (command === 'daynight') {
-
-			var daynightspeed = $gameVariables.GetDaynightSpeed();
-			var daynighttimer = $gameVariables.GetDaynightTimer();     // timer = minutes * speed
-			var daynightcycle = $gameVariables.GetDaynightCycle();     // cycle = hours
-			var daynighthoursinday = $gameVariables.GetDaynightHoursinDay();   // 24
-			var daynightcolors = $gameVariables.GetDaynightColorArray();
-
-	   		if (args[0] === 'speed') {   
-		   		daynightspeed = Number(args[1]);
-				if (daynightspeed <= 0) {
-					daynightspeed = 5000;
-				}
-		        $gameVariables.SetDaynightSpeed(daynightspeed);
-	   		}
-	   		
-	   		if (args[0] === 'add') {   
-		   		var houradd = Number(args[1]); 
-		   		var minuteadd = 0;
-		   		if (args.length > 2) {
-		   			minuteadd = Number(args[2]); 
-	   			}
-	   			
-	   			var daynightminutes = Math.floor(daynighttimer/daynightspeed);
-	   			daynightminutes = daynightminutes + minuteadd;
-	   			if (daynightminutes > 60) {
-		   			daynightminutes = daynightminutes - 60;
-		   			daynightcycle = daynightcycle + 1; 
-	   			}					   			
-	   			daynightcycle = daynightcycle + houradd;
-		   		daynighttimer = daynightminutes * daynightspeed;
-
-		   		if (daynightsavemin > 0) {
-					$gameVariables.setValue(daynightsavemin, daynightminutes);			
-				}
-	        	if (daynightcycle < 0) {
-		       		daynightcycle = 0;
-				}
-	        	if (daynightcycle >= daynighthoursinday) {
-		       		daynightcycle = daynightcycle - daynighthoursinday;
-				}
-				if (daynightsavehours > 0) {
-					$gameVariables.setValue(daynightsavehours, daynightcycle);
-				}
-
-				$gameVariables.SetDaynightTimer(daynighttimer);     // timer = minutes * speed
-				$gameVariables.SetDaynightCycle(daynightcycle);     // cycle = hours
-
-	   		}
-	   		
-	   		
-	   		if (args[0] === 'hour') {
-				daynightcycle = Number(args[1]);
-				if (args.length > 2) {
-					daynightminutes = Number(args[2]);
-				} else {
-					daynightminutes = 0;
-				}
-				daynighttimer = daynightminutes * daynightspeed;
-
-				if (daynightsavemin > 0) {
-					$gameVariables.setValue(daynightsavemin, daynightminutes);
-				}
-				if (daynightcycle < 0) {
-					daynightcycle = 0;
-				}
-				if (daynightcycle >= daynighthoursinday) {
-					daynightcycle = (daynighthoursinday - 1);
-				}
-				if (daynightsavehours > 0) {
-					$gameVariables.setValue(daynightsavehours, daynightcycle);
-				}
-
-				$gameVariables.SetDaynightTimer(daynighttimer);     // timer = minutes * speed
-				$gameVariables.SetDaynightCycle(daynightcycle);     // cycle = hours
-
-			}
-			
-			if (args[0] === 'hoursinday') {
-
-				var old_value = daynighthoursinday ;
-				daynighthoursinday = Number(args[1]);
-	        	if (daynighthoursinday < 0) {
-					daynighthoursinday = 0;
-				}
-	        	if (daynighthoursinday > old_value) {
-		       		for (var i = old_value; i < daynighthoursinday; i++) {
-			       		daynightcolors.push('#FFFFFF');	
-		       		}	
-				}
-				$gameVariables.setDayNightColorArray(daynightcolors);
-				$gameVariables.setDayNightHoursInDay(daynighthoursinday);
-			}
-			
-			if (args[0] === 'debug') {   
-					daynightdebug = true;
-			}
-			
-	   			   		
-	   		if (args[0] === 'color') {
-
-		   		var hour = Number(args[1]);  
-	        	if (hour < 0) {
-		       		hour = 0;
-				}
-	        	if (hour >= daynighthoursinday) {
-		       		hour = (daynighthoursinday-1);
-				}
-				var hourcolor = args[2];
-				var isValidColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(hourcolor); 	    
-				if (isValidColor) {
-					daynightcolors[hour] = hourcolor;
-   				}
-   				$gameVariables.SetDaynightColorArray(daynightcolors);
-			}
-
-
-
-
-		}
-       
-        // ************* FLASHLIGHT *******************
-        if (command === 'flashlight') {
-	        if (args[0] == 'on') {
-
-				var flashlightlength = $gameVariables.GetFlashlightLength();
-				var flashlightwidth = $gameVariables.GetFlashlightWidth();
-				var flashlightdensity = $gameVariables.GetFlashlightDensity();
-				var playercolor = $gameVariables.GetPlayerColor();
-
-    			if (args.length >= 1) { flashlightlength = args[1]; }
-    			if (args.length >= 2) { flashlightwidth = args[2]; }
-    			if (args.length >= 3) {
-	    			 playercolor = args[3];
-	    			 var isValidPlayerColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor); 	    
-					if (!isValidPlayerColor) {
-						playercolor = '#FFFFFF' 
+					if (args.length > 4) {
+						tilebrightness = args[4];
 					}
-	    		}
-    			if (args.length >= 4) {
-	    			 flashlightdensity = args[4]; // density
-	    		}
-
-    			if (flashlightlength == 0 || isNaN(flashlightlength)) { flashlightlength = 8 }
-    			if (flashlightwidth == 0 || isNaN(flashlightwidth)) { flashlightwidth = 12 }
-    			if (flashlightdensity == 0 || isNaN(flashlightdensity)) { flashlightdensity = 3 }
-
-				$gameVariables.SetFlashlight(true);
-    			$gameVariables.SetPlayerColor(playercolor);
-    			$gameVariables.SetFlashlightWidth(flashlightwidth);
-    			$gameVariables.SetFlashlightLength(flashlightlength);
-    			$gameVariables.SetFlashlightDensity(flashlightdensity);
-
-			}
-	        if (args[0] === 'off') {
-				$gameVariables.SetFlashlight(false);
-			}
-
-		} 
-		
-        // ******************* SET FIRE *******************
-        if (command === 'setfire') {
-	       
-			flickerradiusshift = args[0];
-			flickercolorshift = args[1];
-			$gameVariables.SetFireRadius(flickerradiusshift);
-			$gameVariables.SetFireColorshift(flickercolorshift);
-		}			
-
-		// ******************* FIRE *******************
-        if (command === 'fire') {
-    		$gameVariables.SetFire(true);
-	    } else {
-			$gameVariables.SetFire(false);
-		}
-		
-        // ******************** MAIN PLAYER SETTINGS ***************
-        if (command === 'light' || command === 'fire') {
-	        
-	        //******************* Light radius 100 #FFFFFF ************************  	    
-	        if (args[0] == 'radius') {
-    			var newradius = Number(args[1]);
-    			if (newradius >= 0) {
-					$gameVariables.SetRadius(newradius);
-					$gameVariables.SetRadiusTarget(newradius);
 				}
-				if (args.length > 2) {
-					playercolor = args[2];
-					var isValidPlayerColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor); 	    
-					if (!isValidPlayerColor) {
-						playercolor = '#FFFFFF'    
-					}
-					$gameVariables.SetPlayerColor(playercolor);
-				}
-			    // player brightness
-				if (args.length > 3) {
-					var brightness = 0.0;
-					var b_arg = args[3];
-					if (typeof b_arg != 'undefined') {
-					    var key = b_arg.substring(0,1);
-						if (key == 'b' || key == 'B') {
-							var brightness = Number(b_arg.substring(1))/100;
-							$gameVariables.SetPlayerBrightness(brightness);
-						}	
-		    		}
-    			}
-			} 
-			
-			//******************* Light radiusgrow 100 #FFFFFF ************************  	    
-	        if (args[0] === 'radiusgrow') {
-		        var evid = this._eventId;
-		        //Graphics.printError('test',evid);
-    			var newradius = Number(args[1]);
-    			if (newradius >= 0) {
 
-	 				var lightgrow_value = $gameVariables.GetRadius();
-					var lightgrow_target = newradius;
-					var lightgrow_speed = 0.0;
-					if (args.length >= 4) {
-						if(player_radius > newradius) {
-							//shrinking
-							lightgrow_speed = (player_radius * 0.012) / Number(args[4]);
+				var tilefound = false;
+
+				for (var i = 0; i < tilearray.length; i++) {
+					var tilestr = tilearray[i];
+					var tileargs = tilestr.split(";");
+					if (tileargs[0] == tiletype && tileargs[1] == tilenumber) {
+						tilefound = true;
+						if (tiletype === 1 || tiletype === 2) {
+							tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + shape + ";" + x1 + ";" + y1 + ";" + x2 + ";" + y2;
 						} else {
-							//growing
-							lightgrow_speed = (newradius * 0.012) / Number(args[4]);
+							tilearray[i] = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
 						}
-					}else {
-						lightgrow_speed = (Math.abs(newradius-player_radius))/500;	
-					}
-
-					//Graphics.Debug('RADIUS GROW',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
-
-
-					$gameVariables.SetRadius(lightgrow_value);
-					$gameVariables.SetRadiusTarget(lightgrow_target);
-					$gameVariables.SetRadiusSpeed(lightgrow_speed);
-				}
-				// player color
-				if (args.length > 2) {
-					playercolor = args[2];
-					var isValidPlayerColor  = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor); 	    
-					if (!isValidPlayerColor) {
-						playercolor = '#FFFFFF'    
-					}
-					$gameVariables.SetPlayerColor(playercolor);
-				}
-				// player brightness
-				if (args.length > 3) {
-					var brightness = 0.0;
-					var b_arg = args[3];
-					if (typeof b_arg != 'undefined') {
-					    var key = b_arg.substring(0,1);
-						if (key == 'b' || key == 'B') {
-							brightness = Number(b_arg.substring(1))/100;
-							$gameVariables.SetPlayerBrightness(brightness);
-						}	
-		    		}
-    			}
-				
-			} 
-			
-			// *********************** TURN SPECIFIC LIGHT ON *********************
- 			if (args[0] === 'on') {
-
-				var lightarray_id = $gameVariables.GetLightArrayId();
-				var lightarray_state = $gameVariables.GetLightArrayState();
-
-    	 		var lightid = Number(args[1]);
-    			var idfound = false;
-				for (var i = 0; i < lightarray_id.length; i++) {
-					if (lightarray_id[i] == lightid) {
-						idfound = true;
-						lightarray_state[i] = true;
+						//Graphics.Debug('Set',tilearray[i]);
 					}
 				}
-				if (idfound == false) {
-					lightarray_id.push(lightid);
-					lightarray_state.push(true);					
-				}
 
-				$gameVariables.SetLightArrayId(lightarray_id);
-				$gameVariables.SetLightArrayState(lightarray_state);
-			}	
-			
-			// *********************** TURN SPECIFIC LIGHT OFF *********************
- 			if (args[0] === 'off') {
-
-				var lightarray_id = $gameVariables.GetLightArrayId();
-				var lightarray_state = $gameVariables.GetLightArrayState();
-
-    			var lightid = Number(args[1]);
-    			var idfound = false;
-				for (var i = 0; i < lightarray_id.length; i++) {
-					if (lightarray_id[i] == lightid) {
-						idfound = true;
-						lightarray_state[i] = false;
+				if (tilefound === false) {
+					var tiletag = "";
+					if (tiletype === 1 || tiletype === 2) {
+						tiletag = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + shape + ";" + x1 + ";" + y1 + ";" + x2 + ";" + y2;
+					} else {
+						tiletag = tiletype + ";" + tilenumber + ";" + tile_on + ";" + tilecolor + ";" + tileradius + ";" + tilebrightness;
 					}
+					tilearray.push(tiletag);
+					//Graphics.Debug('Push',tiletag);
 				}
-				if (idfound == false) {
-					lightarray_id.push(lightid);
-					lightarray_state.push(false);
-				}
-				$gameVariables.SetLightArrayId(lightarray_id);
-				$gameVariables.SetLightArrayState(lightarray_state);
+				$gameVariables.SetTileArray(tilearray);
 
 			}
-			
-			// **************************** RESET ALL SWITCHES ***********************
-			if (args[0] === 'switch' && args[1] === 'reset') {
 
-				var lightarray_id = $gameVariables.GetLightArrayId();
-				var lightarray_state = $gameVariables.GetLightArrayState();
-				// reset switches to false					
-				for (var i = 0; i < $dataMap.events.length; i++) {
-	        		if ($dataMap.events[i]) {
-						for (var j = 0; j < lightarray_id.length; j++) {
-							if (lightarray_id[j] == lightid) {
-								var mapid = $gameMap.mapId();
-								var eventid = $dataMap.events[i].id;
-								var key = [mapid,eventid,'D'];
-								$gameSelfSwitches.setValue(key, false);
+			// ************* TINT  *******************
+			if (command === 'tint') {
+
+				if (args[0] === 'set') {
+					//var tint_value = args[1];
+					$gameVariables.SetTint(args[1]);
+					$gameVariables.SetTintTarget(args[1]);
+				}
+				if (args[0] === 'fade') {
+					//var Tint_target = args[1];
+					//var Tint_speed = args[2];
+					$gameVariables.SetTintTarget(args[1]);
+					$gameVariables.SetTintSpeed(args[2]);
+				}
+
+				// Graphics.Debug('TINT',args[1]+' '+args[1]+' '+args[2]);
+			}
+
+			// ************* MOGHUNTER TIMESYSTEM COMPATIBLE  *******************
+			if (command === 'tls_moghunter') {
+				if (args[0] === 'on') {
+					//moghunter = true;
+					$gameVariables.SetMog(true);
+				}
+				if (args[0] === 'off') {
+					//moghunter = false
+					$gameVariables.SetTint('#000000');
+					$gameVariables.SetMog(false);
+				}
+				if (args[0] === 'tint') {
+
+					if (args.length = 7) {
+						var mogtint = $gameVariables.GetMogTintArray();
+						for (var i = 0; i <= 5; i++) {
+							var tintcolor = args[i];
+							var isValidColor3 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tintcolor);
+							if (isValidColor3 == true) {
+								mogtint[i] = tintcolor;
+								$gameVariables.SetMogTintArray(mogtint);
 							}
 						}
 					}
 				}
-    			lightarray_id = [];
-				lightarray_state = [];
-				$gameVariables.SetLightArrayId(lightarray_id);
-				$gameVariables.SetLightArrayState(lightarray_state);
 			}
-		}
 
-		// *********************** TURN SCRIPT ON/OFF *********************
-		if (command === 'light' && args[0] == 'deactivate') {
-			//scriptactive = false;
-			$gameVariables.SetScriptActive(false);
-		}
-		if (command === 'light' && args[0] == 'activate') {
-			//scriptactive = true;
-			$gameVariables.SetScriptActive(true);
-		}	
-						
+			// ************* DAYNIGHT *******************
+			if (command === 'daynight') {
 
+				var daynightspeed = $gameVariables.GetDaynightSpeed();
+				var daynighttimer = $gameVariables.GetDaynightTimer();     // timer = minutes * speed
+				var daynightcycle = $gameVariables.GetDaynightCycle();     // cycle = hours
+				var daynighthoursinday = $gameVariables.GetDaynightHoursinDay();   // 24
+				var daynightcolors = $gameVariables.GetDaynightColorArray();
+
+				if (args[0] === 'speed') {
+					daynightspeed = Number(args[1]);
+					if (daynightspeed <= 0) {
+						daynightspeed = 5000;
+					}
+					$gameVariables.SetDaynightSpeed(daynightspeed);
+				}
+
+				if (args[0] === 'add') {
+					var houradd = Number(args[1]);
+					var minuteadd = 0;
+					if (args.length > 2) {
+						minuteadd = Number(args[2]);
+					}
+
+					var daynightminutes = Math.floor(daynighttimer / daynightspeed);
+					daynightminutes = daynightminutes + minuteadd;
+					if (daynightminutes > 60) {
+						daynightminutes = daynightminutes - 60;
+						daynightcycle = daynightcycle + 1;
+					}
+					daynightcycle = daynightcycle + houradd;
+					daynighttimer = daynightminutes * daynightspeed;
+
+					if (daynightsavemin > 0) {
+						$gameVariables.setValue(daynightsavemin, daynightminutes);
+					}
+					if (daynightcycle < 0) {
+						daynightcycle = 0;
+					}
+					if (daynightcycle >= daynighthoursinday) {
+						daynightcycle = daynightcycle - daynighthoursinday;
+					}
+					if (daynightsavehours > 0) {
+						$gameVariables.setValue(daynightsavehours, daynightcycle);
+					}
+
+					$gameVariables.SetDaynightTimer(daynighttimer);     // timer = minutes * speed
+					$gameVariables.SetDaynightCycle(daynightcycle);     // cycle = hours
+
+				}
+
+
+				if (args[0] === 'hour') {
+					daynightcycle = Number(args[1]);
+					if (args.length > 2) {
+						daynightminutes = Number(args[2]);
+					} else {
+						daynightminutes = 0;
+					}
+					daynighttimer = daynightminutes * daynightspeed;
+
+					if (daynightsavemin > 0) {
+						$gameVariables.setValue(daynightsavemin, daynightminutes);
+					}
+					if (daynightcycle < 0) {
+						daynightcycle = 0;
+					}
+					if (daynightcycle >= daynighthoursinday) {
+						daynightcycle = (daynighthoursinday - 1);
+					}
+					if (daynightsavehours > 0) {
+						$gameVariables.setValue(daynightsavehours, daynightcycle);
+					}
+
+					$gameVariables.SetDaynightTimer(daynighttimer);     // timer = minutes * speed
+					$gameVariables.SetDaynightCycle(daynightcycle);     // cycle = hours
+
+				}
+
+				if (args[0] === 'hoursinday') {
+
+					var old_value = daynighthoursinday;
+					daynighthoursinday = Number(args[1]);
+					if (daynighthoursinday < 0) {
+						daynighthoursinday = 0;
+					}
+					if (daynighthoursinday > old_value) {
+						for (var i = old_value; i < daynighthoursinday; i++) {
+							daynightcolors.push('#FFFFFF');
+						}
+					}
+					$gameVariables.setDayNightColorArray(daynightcolors);
+					$gameVariables.setDayNightHoursInDay(daynighthoursinday);
+				}
+
+				if (args[0] === 'debug') {
+					daynightdebug = true;
+				}
+
+
+				if (args[0] === 'color') {
+
+					var hour = Number(args[1]);
+					if (hour < 0) {
+						hour = 0;
+					}
+					if (hour >= daynighthoursinday) {
+						hour = (daynighthoursinday - 1);
+					}
+					var hourcolor = args[2];
+					var isValidColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(hourcolor);
+					if (isValidColor) {
+						daynightcolors[hour] = hourcolor;
+					}
+					$gameVariables.SetDaynightColorArray(daynightcolors);
+				}
+
+
+			}
+
+			// ************* FLASHLIGHT *******************
+			if (command === 'flashlight') {
+				if (args[0] == 'on') {
+
+					var flashlightlength = $gameVariables.GetFlashlightLength();
+					var flashlightwidth = $gameVariables.GetFlashlightWidth();
+					var flashlightdensity = $gameVariables.GetFlashlightDensity();
+					var playercolor = $gameVariables.GetPlayerColor();
+
+					if (args.length >= 1) {
+						flashlightlength = args[1];
+					}
+					if (args.length >= 2) {
+						flashlightwidth = args[2];
+					}
+					if (args.length >= 3) {
+						playercolor = args[3];
+						var isValidPlayerColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor);
+						if (!isValidPlayerColor) {
+							playercolor = '#FFFFFF'
+						}
+					}
+					if (args.length >= 4) {
+						flashlightdensity = args[4]; // density
+					}
+
+					if (flashlightlength == 0 || isNaN(flashlightlength)) {
+						flashlightlength = 8
+					}
+					if (flashlightwidth == 0 || isNaN(flashlightwidth)) {
+						flashlightwidth = 12
+					}
+					if (flashlightdensity == 0 || isNaN(flashlightdensity)) {
+						flashlightdensity = 3
+					}
+
+					$gameVariables.SetFlashlight(true);
+					$gameVariables.SetPlayerColor(playercolor);
+					$gameVariables.SetFlashlightWidth(flashlightwidth);
+					$gameVariables.SetFlashlightLength(flashlightlength);
+					$gameVariables.SetFlashlightDensity(flashlightdensity);
+
+				}
+				if (args[0] === 'off') {
+					$gameVariables.SetFlashlight(false);
+				}
+
+			}
+
+			// ******************* SET FIRE *******************
+			if (command === 'setfire') {
+
+				flickerradiusshift = args[0];
+				flickercolorshift = args[1];
+				$gameVariables.SetFireRadius(flickerradiusshift);
+				$gameVariables.SetFireColorshift(flickercolorshift);
+			}
+
+			// ******************* FIRE *******************
+			if (command === 'fire') {
+				$gameVariables.SetFire(true);
+			} else {
+				$gameVariables.SetFire(false);
+			}
+
+			// ******************** MAIN PLAYER SETTINGS ***************
+			if (command === 'light' || command === 'fire') {
+
+				//******************* Light radius 100 #FFFFFF ************************
+				if (args[0] == 'radius') {
+					var newradius = Number(args[1]);
+					if (newradius >= 0) {
+						$gameVariables.SetRadius(newradius);
+						$gameVariables.SetRadiusTarget(newradius);
+
+					}
+					if (args.length > 2) {
+						playercolor = args[2];
+						var isValidPlayerColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor);
+						if (!isValidPlayerColor) {
+							playercolor = '#FFFFFF'
+						}
+						$gameVariables.SetPlayerColor(playercolor);
+					}
+					// player brightness
+					if (args.length > 3) {
+						var brightness = 0.0;
+						var b_arg = args[3];
+						if (typeof b_arg != 'undefined') {
+							var key = b_arg.substring(0, 1);
+							if (key == 'b' || key == 'B') {
+								var brightness = Number(b_arg.substring(1)) / 100;
+								$gameVariables.SetPlayerBrightness(brightness);
+							}
+						}
+					}
+				}
+
+				//******************* Light radiusgrow 100 #FFFFFF ************************
+				if (args[0] === 'radiusgrow') {
+					var evid = this._eventId;
+					//Graphics.printError('test',evid);
+					var newradius = Number(args[1]);
+					if (newradius >= 0) {
+
+						var lightgrow_value = $gameVariables.GetRadius();
+						var lightgrow_target = newradius;
+						var lightgrow_speed = 0.0;
+						if (args.length >= 4) {
+							if (player_radius > newradius) {
+								//shrinking
+								lightgrow_speed = (player_radius * 0.012) / Number(args[4]);
+							} else {
+								//growing
+								lightgrow_speed = (newradius * 0.012) / Number(args[4]);
+							}
+						} else {
+							lightgrow_speed = (Math.abs(newradius - player_radius)) / 500;
+						}
+
+						//Graphics.Debug('RADIUS GROW',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
+
+
+						$gameVariables.SetRadius(lightgrow_value);
+						$gameVariables.SetRadiusTarget(lightgrow_target);
+						$gameVariables.SetRadiusSpeed(lightgrow_speed);
+					}
+					// player color
+					if (args.length > 2) {
+						playercolor = args[2];
+						var isValidPlayerColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(playercolor);
+						if (!isValidPlayerColor) {
+							playercolor = '#FFFFFF'
+						}
+						$gameVariables.SetPlayerColor(playercolor);
+					}
+					// player brightness
+					if (args.length > 3) {
+						var brightness = 0.0;
+						var b_arg = args[3];
+						if (typeof b_arg != 'undefined') {
+							var key = b_arg.substring(0, 1);
+							if (key == 'b' || key == 'B') {
+								brightness = Number(b_arg.substring(1)) / 100;
+								$gameVariables.SetPlayerBrightness(brightness);
+							}
+						}
+					}
+
+				}
+
+				// *********************** TURN SPECIFIC LIGHT ON *********************
+				if (args[0] === 'on') {
+
+					var lightarray_id = $gameVariables.GetLightArrayId();
+					var lightarray_state = $gameVariables.GetLightArrayState();
+
+					var lightid = Number(args[1]);
+					var idfound = false;
+					for (var i = 0; i < lightarray_id.length; i++) {
+						if (lightarray_id[i] == lightid) {
+							idfound = true;
+							lightarray_state[i] = true;
+						}
+					}
+					if (idfound == false) {
+						lightarray_id.push(lightid);
+						lightarray_state.push(true);
+					}
+
+					$gameVariables.SetLightArrayId(lightarray_id);
+					$gameVariables.SetLightArrayState(lightarray_state);
+				}
+
+				// *********************** TURN SPECIFIC LIGHT OFF *********************
+				if (args[0] === 'off') {
+
+					var lightarray_id = $gameVariables.GetLightArrayId();
+					var lightarray_state = $gameVariables.GetLightArrayState();
+
+					var lightid = Number(args[1]);
+					var idfound = false;
+					for (var i = 0; i < lightarray_id.length; i++) {
+						if (lightarray_id[i] == lightid) {
+							idfound = true;
+							lightarray_state[i] = false;
+						}
+					}
+					if (idfound == false) {
+						lightarray_id.push(lightid);
+						lightarray_state.push(false);
+					}
+					$gameVariables.SetLightArrayId(lightarray_id);
+					$gameVariables.SetLightArrayState(lightarray_state);
+
+				}
+
+				// **************************** RESET ALL SWITCHES ***********************
+				if (args[0] === 'switch' && args[1] === 'reset') {
+
+					var lightarray_id = $gameVariables.GetLightArrayId();
+					var lightarray_state = $gameVariables.GetLightArrayState();
+					// reset switches to false
+					for (var i = 0; i < $dataMap.events.length; i++) {
+						if ($dataMap.events[i]) {
+							for (var j = 0; j < lightarray_id.length; j++) {
+								if (lightarray_id[j] == lightid) {
+									var mapid = $gameMap.mapId();
+									var eventid = $dataMap.events[i].id;
+									var key = [mapid, eventid, 'D'];
+									$gameSelfSwitches.setValue(key, false);
+								}
+							}
+						}
+					}
+					lightarray_id = [];
+					lightarray_state = [];
+					$gameVariables.SetLightArrayId(lightarray_id);
+					$gameVariables.SetLightArrayState(lightarray_state);
+				}
+			}
+
+			// *********************** TURN SCRIPT ON/OFF *********************
+			if (command === 'light' && args[0] == 'deactivate') {
+				//scriptactive = false;
+				$gameVariables.SetScriptActive(false);
+			}
+			if (command === 'light' && args[0] == 'activate') {
+				//scriptactive = true;
+				$gameVariables.SetScriptActive(true);
+			}
+
+		}
 	}
 
 	Spriteset_Map.prototype.createLightmask = function() {
@@ -839,7 +874,7 @@ Imported.TerraxLighting = true;
 			var lightgrow_target = $gameVariables.GetRadiusTarget();
 			var lightgrow_speed = $gameVariables.GetRadiusSpeed();
 
-			//Graphics.Debug('RADIUS',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
+			Graphics.Debug('RADIUS',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
 
 			if (lightgrow_value < lightgrow_target) {
 				lightgrow_value = lightgrow_value + lightgrow_speed;
@@ -897,6 +932,7 @@ Imported.TerraxLighting = true;
 			var flashlightwidth = $gameVariables.GetFlashlightWidth();
 			var playerflicker = $gameVariables.GetFire();
 			var playerbrightness = $gameVariables.GetPlayerBrightness();
+
 
 			var iplayer_radius = Math.floor(player_radius);
 
@@ -1680,13 +1716,23 @@ Imported.TerraxLighting = true;
 		this._Terrax_Lighting_Radius = value;
 	}
 	Game_Variables.prototype.GetRadius = function() {
-		return this._Terrax_Lighting_Radius || 150;
+		//return this._Terrax_Lighting_Radius || 150;
+		if (this._Terrax_Lighting_Radius === undefined) {
+			return 150;
+		}else {
+			return this._Terrax_Lighting_Radius;
+		}
 	};
 	Game_Variables.prototype.SetRadiusTarget = function(value) {
 		this._Terrax_Lighting_RadiusTarget = value;
 	}
 	Game_Variables.prototype.GetRadiusTarget = function() {
-		return this._Terrax_Lighting_RadiusTarget || 150;
+		//return this._Terrax_Lighting_RadiusTarget || 150;
+		if (this._Terrax_Lighting_RadiusTarget === undefined) {
+			return 150;
+		}else {
+			return this._Terrax_Lighting_RadiusTarget;
+		}
 	};
 	Game_Variables.prototype.SetRadiusSpeed = function(value) {
 		this._Terrax_Lighting_RadiusSpeed = value;
