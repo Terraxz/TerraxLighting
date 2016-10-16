@@ -332,7 +332,7 @@ Imported.TerraxLighting = true;
 					$gameVariables.SetTintSpeed(args[2]);
 				}
 
-				// Graphics.Debug('TINT',args[1]+' '+args[1]+' '+args[2]);
+				 //Graphics.Debug('TINT',args[1]+' '+args[1]+' '+args[2]);
 			}
 
 			// ************* MOGHUNTER TIMESYSTEM COMPATIBLE  *******************
@@ -748,6 +748,7 @@ Imported.TerraxLighting = true;
 	Lightmask.prototype._createBitmap = function() {
 	    this._maskBitmap = new Bitmap(maxX,maxY);   // one big bitmap to fill the intire screen with black
 	    var canvas = this._maskBitmap.canvas;             // a bit larger then setting to take care of screenshakes
+
 	};
 	
 	/**
@@ -860,7 +861,8 @@ Imported.TerraxLighting = true;
 			            var note_args = note.split(" ");
 			    		var note_command = note_args.shift().toLowerCase();    		
 			            if (note_command == "light" || note_command == "fire" || note_command == "daynight" || note_command == "flashlight" ) {			
-							this._addSprite(0,0,this._maskBitmap); // light event? yes.. then turn off the lights		
+							this._addSprite(0,0,this._maskBitmap); // light event? yes.. then turn off the lights
+							//this._addSprite(-10,0,this._shakeBitmap);
 							break;
 						}
 					}
@@ -874,7 +876,7 @@ Imported.TerraxLighting = true;
 			var lightgrow_target = $gameVariables.GetRadiusTarget();
 			var lightgrow_speed = $gameVariables.GetRadiusSpeed();
 
-			Graphics.Debug('RADIUS',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
+			//Graphics.Debug('RADIUS',player_radius+' '+lightgrow_value+' '+lightgrow_target+' '+lightgrow_speed);
 
 			if (lightgrow_value < lightgrow_target) {
 				lightgrow_value = lightgrow_value + lightgrow_speed;
@@ -1359,6 +1361,7 @@ Imported.TerraxLighting = true;
 				var tint_target = $gameVariables.GetTintTarget();
 				var tint_speed = $gameVariables.GetTintSpeed();
 
+
 				if (Terrax_tint_target != terrax_tint_target_old) {
 					terrax_tint_target_old = Terrax_tint_target;
 					tint_target = Terrax_tint_target;
@@ -1369,6 +1372,8 @@ Imported.TerraxLighting = true;
 					tint_speed = Terrax_tint_speed;
 					$gameVariables.SetTintSpeed(tint_speed);
 				}
+
+				//Graphics.Debug('TINT',tint_value+' '+tint_target+' '+tint_speed);
 
 				var tcolor = tint_value;
 			    if (tint_value != tint_target) {
