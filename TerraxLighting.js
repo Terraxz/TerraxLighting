@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.3
+// Version: 1.3.4
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.3.3 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.3.4 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -1735,7 +1735,7 @@ Imported.TerraxLighting = true;
 	};
 	Game_Variables.prototype.SetRadius = function(value) {
 		this._Terrax_Lighting_Radius = value;
-	}
+	};
 	Game_Variables.prototype.GetRadius = function() {
 		//return this._Terrax_Lighting_Radius || 150;
 		if (this._Terrax_Lighting_Radius === undefined) {
@@ -1746,7 +1746,7 @@ Imported.TerraxLighting = true;
 	};
 	Game_Variables.prototype.SetRadiusTarget = function(value) {
 		this._Terrax_Lighting_RadiusTarget = value;
-	}
+	};
 	Game_Variables.prototype.GetRadiusTarget = function() {
 		//return this._Terrax_Lighting_RadiusTarget || 150;
 		if (this._Terrax_Lighting_RadiusTarget === undefined) {
@@ -1757,7 +1757,7 @@ Imported.TerraxLighting = true;
 	};
 	Game_Variables.prototype.SetRadiusSpeed = function(value) {
 		this._Terrax_Lighting_RadiusSpeed = value;
-	}
+	};
 	Game_Variables.prototype.GetRadiusSpeed = function() {
 		return this._Terrax_Lighting_RadiusSpeed || 0;
 	};
@@ -1869,18 +1869,33 @@ Imported.TerraxLighting = true;
 	    this.createLightmask();
 	    this.createWeather();
 	
-	}
+	};
 
 	//****
 	// These functions are overwritten from objects/sprites/scenes.
 	//****
 
 	Game_CharacterBase.prototype.setDirection = function(d) {
-				
-	    if (!this.isDirectionFixed() && d) {
-	        this._direction = d;
+
+		if (Imported.Quasi_Movement) {
+			if (!this.isDirectionFixed() && d) {
+				if ([1, 3, 7, 9].contains(d)) {
+					this._diagonal = d;
+					this.resetStopCount();
+					return;
+				} else {
+					this._diagonal = false;
+				}
+			}
+			//Alias_Game_CharacterBase_setDirection.call(this, d);
 		}
-		
+
+		if (!this.isDirectionFixed() && d) {
+			this._direction = d;
+		}
+		this.resetStopCount();
+
+
 		if (!this.isDirectionFixed() ) {
 			
 			var evid = this._eventId;    // Capture the realX and realY of moving events.
@@ -1905,8 +1920,8 @@ Imported.TerraxLighting = true;
 				}
 			}
 		}
-	    this.resetStopCount();
-	}
+
+	};
 
 	Game_CharacterBase.prototype.updateMove = function() {
 		
@@ -1936,23 +1951,55 @@ Imported.TerraxLighting = true;
 				}
 			}
 		}
-		//Graphics.printError('test',evid + ' ' + this._realX + ' '+ this._realY);
-		
-	    if (this._x < this._realX) {
-	        this._realX = Math.max(this._realX - this.distancePerFrame(), this._x);
-	    }
-	    if (this._x > this._realX) {
-	        this._realX = Math.min(this._realX + this.distancePerFrame(), this._x);
-	    }
-	    if (this._y < this._realY) {
-	        this._realY = Math.max(this._realY - this.distancePerFrame(), this._y);
-	    }
-	    if (this._y > this._realY) {
-	        this._realY = Math.min(this._realY + this.distancePerFrame(), this._y);
-	    }
-	    if (!this.isMoving()) {
-	        this.refreshBushDepth();
-	    }
+
+		// copied from Quasi_Movement
+		if (Imported.Quasi_Movement) {
+			if (this._px < this._realPX) {
+				this._realPX = Math.max(this._realPX - this.frameSpeed(this.radianCos()), this._px);
+			}
+			if (this._px > this._realPX) {
+				this._realPX = Math.min(this._realPX + this.frameSpeed(this.radianCos()), this._px);
+			}
+			if (this._py < this._realPY) {
+				this._realPY = Math.max(this._realPY - this.frameSpeed(this.radianSin()), this._py);
+			}
+			if (this._py > this._realPY) {
+				this._realPY = Math.min(this._realPY + this.frameSpeed(this.radianSin()), this._py);
+			}
+
+			this._x = this._px / QuasiMovement.tileSize;
+			this._y = this._py / QuasiMovement.tileSize;
+			this._realX = this._realPX / QuasiMovement.tileSize;
+			this._realY = this._realPY / QuasiMovement.tileSize;
+
+			if (this.constructor === Game_Event) {
+				if (!this._locked) this._freqCount += this.moveTiles();
+			} else if (this.constructor === Game_Player)  {
+				if (!this._locked) this._freqCount += this.moveTiles();
+			}
+
+			if (!this.startedMoving()) {
+				this.refreshBushDepth();
+				this._adjustFrameSpeed = false;
+			}
+		} else {
+			// Normal code
+			if (this._x < this._realX) {
+				this._realX = Math.max(this._realX - this.distancePerFrame(), this._x);
+			}
+			if (this._x > this._realX) {
+				this._realX = Math.min(this._realX + this.distancePerFrame(), this._x);
+			}
+			if (this._y < this._realY) {
+				this._realY = Math.max(this._realY - this.distancePerFrame(), this._y);
+			}
+			if (this._y > this._realY) {
+				this._realY = Math.min(this._realY + this.distancePerFrame(), this._y);
+			}
+			if (!this.isMoving()) {
+				this.refreshBushDepth();
+			}
+		}
 	}
 	
 
