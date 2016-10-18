@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.5
+// Version: 1.3.6
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.3.5 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.3.6 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -203,10 +203,11 @@ Imported.TerraxLighting = true;
 	// global timing variables
 	var tint_oldseconds=0;
 	var tint_timer=0;
-	var moghunter_phase = 0;
+	var moghunter_phase = -1;
 	var oldmap = 0;
 	var oldseconds = 0;
 	var daynightdebug = false;
+	var mogdebug = false;
 	var terrax_tint_speed_old = 60;
 	var terrax_tint_target_old = '#000000'
 	var firstrun = true;
@@ -360,6 +361,9 @@ Imported.TerraxLighting = true;
 							}
 						}
 					}
+				}
+				if (args[0] === 'debug') {
+					mogdebug = true;
 				}
 			}
 
@@ -760,7 +764,7 @@ Imported.TerraxLighting = true;
 	//@method _createBitmaps
 	
 	Lightmask.prototype._createBitmap = function() {
-	    this._maskBitmap = new Bitmap(maxX,maxY);   // one big bitmap to fill the intire screen with black
+	    this._maskBitmap = new Bitmap(maxX+20,maxY);   // one big bitmap to fill the intire screen with black
 	    var canvas = this._maskBitmap.canvas;             // a bit larger then setting to take care of screenshakes
 
 	};
@@ -834,26 +838,37 @@ Imported.TerraxLighting = true;
 				if ($gameVariables.GetMog() == true) {
 
 					if (searchdaynight.search('mogtime') >= 0) {
-
+						var debugline = "";
 						var new_phase = 0;
 						if ($gameSwitches.value(21)) {
 							new_phase = 0;
+							debugline = debugline +" SW21:DAWN "
 						} //Dawn
 						if ($gameSwitches.value(22)) {
 							new_phase = 1;
+							debugline = debugline +" SW22:RISE "
 						} //Rise
 						if ($gameSwitches.value(23)) {
 							new_phase = 2;
+							debugline = debugline +" SW23:DAY "
 						} //Day
 						if ($gameSwitches.value(24)) {
 							new_phase = 3;
+							debugline = debugline +" SW24:SUNSET "
 						} //Set
 						if ($gameSwitches.value(25)) {
 							new_phase = 4;
+							debugline = debugline +" SW25:DUSK "
 						} //Dusk
 						if ($gameSwitches.value(26)) {
 							new_phase = 5;
+							debugline = debugline +" SW26:NIGHT "
 						} //Night
+
+						if (debugline == ""){
+							debugline = "No switches (21-26) active, Mog is probably not loaded"
+						}
+
 						if (new_phase != moghunter_phase) {
 							moghunter_phase = new_phase;
 							var newtint = '#000000';
@@ -883,6 +898,11 @@ Imported.TerraxLighting = true;
 							$gameVariables.SetTintTarget(newtint);
 							$gameVariables.SetTintSpeed(10);
 
+						}
+						if (mogdebug) {
+							var tinttarget = $gameVariables.GetTintTarget();
+							debugline = debugline + " Tintcolor: " + tinttarget;
+							Graphics.Debug('MogTimeSystem Debug', debugline);
 						}
 					}
 				}
@@ -1530,7 +1550,7 @@ Imported.TerraxLighting = true;
 					}
 
 					//Graphics.Debug('TINT',tint_value+' '+tint_target+' '+tint_speed+' '+tcolor);
-					this._maskBitmap.FillRect(0, 0, maxX, maxY, tcolor);
+					this._maskBitmap.FillRect(-20, 0, maxX+20, maxY, tcolor);
 				}
 
 				// reset drawmode to normal
@@ -1572,7 +1592,7 @@ Imported.TerraxLighting = true;
 	
 	Bitmap.prototype.FillRect = function(x1, y1, x2, y2, color1) {
 		x1=x1+20;
-		x2=x2+20;
+		//x2=x2+20;
 	    var context = this._context;
 	    context.save();
 	    context.fillStyle = color1;
@@ -1989,16 +2009,16 @@ Imported.TerraxLighting = true;
 		if (!this.isDirectionFixed() && d) {
 			this._direction = d;
 		}
-		this.resetStopCount();
+
 
 
 		if (!this.isDirectionFixed() ) {
 			
 			var evid = this._eventId;    // Capture the realX and realY of moving events.
 			if (evid) {
-				if (typeof $gameMap.events[evid] != 'undefined') {
-					if ($gameMap.events[evid] != null) {
-						var note = $gameMap.events[evid].note;
+				if (typeof $dataMap.events[evid] != 'undefined') {
+					if ($dataMap.events[evid] != null) {
+						var note = $dataMap.events[evid].note;
 						var note_args = note.split(" ");
 						var note_command = note_args.shift().toLowerCase();
 						if (note_command == "light" || note_command == "fire" || note_command == "flashlight") {
@@ -2018,16 +2038,16 @@ Imported.TerraxLighting = true;
 				}
 			}
 		}
-
+		this.resetStopCount();
 	};
 
 	Game_CharacterBase.prototype.updateMove = function() {
 		
 		var evid = this._eventId;    // Capture the realX and realY of moving events.
 		if (evid) {
-			if (typeof $gameMap.events[evid] != 'undefined') {
-				if ($gameMap.events[evid] != null) {
-					var note = $gameMap.events[evid].note;
+			if (typeof $dataMap.events[evid] != 'undefined') {
+				if ($dataMap.events[evid] != null) {
+					var note = $dataMap.events[evid].note;
 					var note_args = note.split(" ");
 					var note_command = note_args.shift().toLowerCase();
 					if (note_command == "light" || note_command == "fire" || note_command == "flashlight") {
