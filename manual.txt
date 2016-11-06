@@ -1,0 +1,196 @@
+This is the manual for the terrax lighting script for RPGMaker MV.
+Released under the MIT license.
+If used for commercial projects feel free to make a donation or better yet, give me a free version of what you have created.
+e-mail : fox(AT)caiw.nl / terraxz2 on steam.
+Support and questions can be asked on this forum: http://forums.rpgmakerweb.com/index.php?/topic/49339-terrax-lighting-system/
+
+
+To activate the script in an area, do the following:
+ 1. Put an event into the map.
+ 2. In the 'Note' field (Next to the name) put the following text :
+ Light 250 #FFFFFF
+ - Light activates the script
+ - 250 is the lightradius of the object
+ - #FFFFFF is the lightcolor (white in this case)
+ You're done, its that simple.
+ 
+
+**************** Player options ******************
+
+You can set the starting radius of the player in the settings of the plugin.
+You can alter the lightradius of the player with 
+Plugin command: Light radius 200 #FFFFFF   (with 200 radius, color #FFFFFF)
+If you want to change the player radius slowly over time (like a dying torch)
+use the command 'Light radiusgrow 200 #FFFFFF'
+You can alter the brightness of the players lightsource by adding: 
+Light radius 200 #FFFFFF B70' (Brightness values between 0 and 99, 0 is default)
+
+Replacing the 'Light' keyworld with 'Fire' will give the lights a subtle flicker
+You can configure the fire effect with the plugin command 'SetFire 7 10'
+Where 7 is the radius change and 10 is the shift in color from red to yellow. 
+
+To use a flashlight effect use 'Flashlight on 8 12 #FFFFFF 3' and 'Flashlight off'
+The arguments are optional (8=beamlength, 12=beamwidth, #FFFFFF=color, 3=beam density)
+
+Examples : 
+Plugin command: Light radius 200 #FF0000   -> Player radius 200, color red.
+Plugin command: Light radius 1 #000000 -> Player has no light at all.
+Plugin command: Light radius 100 #FFFFFF B70 -> Player has a small, very bright light.
+Plugin command: Fire radius 200 #FFAAAA  -> Player has a torch with a red/yellow color
+Plugin command: Fire radiusgrow 1 #FFAAAA -> The players torch slowly dies until its completly gone
+Plugin command: Flashlight on 8 12 #FFFFFF 3  -> Turn on a flashlight instead of a globe around the player.
+Plugin command: Flashlight off -> Turn off the flashlight and resume with a lightglobe.
+
+Player Fire Settings: 
+Plugin command:  SetFire 20 15  -> If the player is using a torch this will increase the flickerrate and colorshift a lot
+Plugin command:  SetFire 3 5 -> Reduced flicker-rate and colorshift.  
+Plugin command:  SetFire 7 10  -> Will set flickerrate and colorshift of the torch to default.
+
+
+**************** Event options ***********************
+
+Giving events lightsources is done by adding a definition to the tag.
+Lightsources will automaticly move with events that move.
+
+In the 'Note' field (Next to the name) put the following text :
+Light 250 #FFFFFF
+
+ You can add two optional commands for brightness and direction
+ Light 200 #FFFFFF B50 increases the brightness with 50%. Value between 0 and 99.
+ Light 200 #FFFFFF D1 will give half a lightglobe for lightsources placed on walls.
+  1. For lights on north walls, light will face down.
+  2. For lights on east walls, light will face west.
+  3. For lights on south walls, light will face north.
+  4. For lights on west walls, light will face east.
+ 
+ To turn on and off lightsources in the game, do the following:
+ Give the lightsource the normal def :  Light 250 #FFFFFF and an extra number so it becomes 'Light 250 #FFFFFF 1'
+
+ (If your using the optional brightness and direction place it after those (Light 250 #FFFFFF B50 D2 1)
+
+ To turn on this light use plugin command : 'Light on 1'.
+ To turn off the light use plugin command : 'Light off 1'.
+ The plugin command will also trigger SelfSwitch 'D' on the targeted light(s).
+ You can reset the switches each map with the option or manualy by  the plugin command 'Light switch reset' 
+ 
+You can also turn off lights with the kill-selfswitch defined in the parameters. If you set the killswitch in the 
+parameters to 'C', the light will turn off when selfswitch C of an event is thrown. 
+ 
+Events can also use the flashlight effect.
+Use 'Flashlight 8 12 #888888 1 2' in the note-tag.
+8 is the length of the flashlights beam .
+12 is the width of the beam. 
+#888888 is the color of the beam.
+The last numbers are optional and can be used to turn the NPC's flashlight on or off and set the direction of the beam
+ if the event is not moving (1=up, 2=right, 3=down, 4=left) the default is down.
+
+
+**************** Using tiletags or regions to display lights **************
+
+TileLight and RegionLight settings
+To create lightsources without using events you can use the following plugin command.
+TileLight 1 ON #FFFFFF 150  Will create a lightsource (color #FFFFFF radius 150) on all tiles with tile-tag 1.
+TileRegion 1 ON #FFFFFF 150 Will create a lightsource on all tiles with region-number 1.
+You can increase the brightness of a lightsource with the optional TileRegion 1 ON #FFFFFF 150 B50  (for 50% increased brightness)
+TileLight 1 OFF will turn off the lights on tile-tag 1 again 
+TileRegion 1 OFF will turn off the lights on region-number 1 again  
+TileFire and RegionFire works the same as TileLight, but with fire effect.
+Make sure your map still has at least one event with lights in it, otherwise the script will not run.
+ 
+ TileBlock and RegionBlock settings
+ To block lights on certain tiles (roofs for instance) you can use the following plugin command.
+ TileBlock 1 ON #000000  Will block light on tiles with tile-tag 1. 
+ RegionBlock 1 ON #000000 Will block lights on tiles with region-number 1.
+ TileBlock 1 OFF and TileRegion 1 OFF turns off the blocking again.
+ To darken but not completly block light use a slightly higher color setting (#333333) for instance.
+ This function does not raytrace. If the players lightradius is bigger then the blocking tiles the 
+ light will show on the other side. For the best effect keep the lightradius a bit smaller then the block section.
+ for advance users, if you want to block more or less of the tile you can do the following
+ RegionBlock 1 ON #000000 shape xoffset yoffset width height
+ RegionBlock 1 ON #000000 1 20 20 10 10   -> this will block a box starting at 20,20 with width and height 10,10
+ RegionBlock 1 ON #000000 2 20 20 10 10   -> this will block a oval starting at 20,20 with xradius 10 and yradius 10
+
+
+**************** Decrease overal darkness **************
+
+If you think the night is to dark you can use the tint command to make it less dark.
+The plugin command 'Tint set #333333' will make the room less dark.
+
+The plugin command 'Tint fade #777777 5' will fade the color from the current color to the new, the last
+number (5) is the speed of the fade, were 1 is a fast fade and 20 is a very slow one.
+If an area has a daynight cycle system, the tint system is disabled.
+
+
+**************** Day/Night cycles ********************
+
+To activate a day-night cycle on a map, put an event with 'DayNight' in the notetag or put 'DayNight' in the map note.
+Plugin command 'Daynight speed 10' changes the speed.
+Speed 10 means it takes 10 seconds to to pass one hour in game (probably to fast)
+ 
+Plugin command 'Daynight hour 16 30' sets the hour to 16:30 hours
+You can add time with the plugin command 'Daynight add 8 30' (this adds 8 hours and 30 minutes) 
+
+Each hour has its own color value.
+Plugin command 'Daynight color 0 #222222' changes 0:00 hours to color value '#222222'
+ 
+If you want to use the time of day to trigger effects (like turning on lights when it gets dark)
+you can use the parameters 'Save DaynightHours','Save DaynightMinutes','Save DaynightSeconds'
+The default is 0, which means its off.
+If you set it to a value,5 for example, it will store the daynight value inside game variable 5.
+You can then use that variable to trigger lights.
+To help syncing/debugging the time system you can use scriptcommand 'daynight debug' to display the current time.
+If you want to go 'alien world' and stuff, you can change the number of hours in a day with
+script command 'daynight hoursinday 48' (for 48 hours in day, don't forget to fill in the hour values)
+ 
+Terrax lighting system is compatible with the Moghunter time system, for specifics see the read-me.
+
+
+**************** Effects ************************
+
+You can use the following plugin calls to create short duration light effects for explosions or spells.
+
+plugin command: effect_on_event 003 200 #FFAAAA 50  -> Will create a lightglobe on event with id 003, Radius 200, color #FFAAAA, duration 50 frames
+plugin command: effect_on_xy 560 500 50 #FFAAAA 25 -> Will create a lightglobe on coordinates 560,500, Radius 50, color #FFAAAA, duration 25 frames
+
+
+**************** Quasi ABS compatibility ***************
+
+1) Make sure the terraxlighting plugin is below the quasi abs plugin in the list
+2) If you want to add lights to the quasi arrows/missles and such add 2 lines to the definition in the database
+
+The definition should look like below
+
+<absSettings>
+collider: box, 12, 36
+through: 3
+tx_missle: 40, #FFAAAA
+tx_blast: 300, #FFAAAA, 50
+</absSettings>
+<absSequence>
+user pose atk
+wait 15
+picture arrow true 4
+move forward 250 30
+wait 30
+trigger
+</absSequence>
+
+Added to the normal abs stuff is
+
+tx_missle: 40, #FFAAAA -> this will light up the missles/spells with a radius of 40 and color #FFAAAA (red/yellow)
+tx_blast: 300, #FFAAAA, 50 -> when the event triggers, it will light up the area with a radius of 300, color #FFAAAA and duration 50 clicks.
+tx_onhit: 40, #FF0000, 20 -> If you want an effect when a spell hits but doesn't trigger.
+
+
+**************** Turning the script on and off ************
+
+To completly turn off the script use : Script deactivate'
+To turn it on again use the command: 'Script activate'
+
+To completly turn off the script use : 'Light deactivate'
+To turn it on again use the command: 'Light activate'
+
+Both do the same thing, script is higher in rank as light.
+
+ 
+ **************************************************
