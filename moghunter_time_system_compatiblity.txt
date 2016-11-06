@@ -1,0 +1,44 @@
+Setting up the Mog Time system together with TerraxLighting system.
+
+Step 1:
+Downloading the Mog Time system  -> Go to https://atelierrgss.wordpress.com/rmv-timesystem-hud/
+You will download the Mog_Master_MV.zip.
+
+Step 2: 
+This zip contains a lot of plugins, you can use them all, but if you are only interested in the time system
+these are the files you need
+
+Mogmaster_MV/js/plugins/MOG_TimeSystem.js
+Mogmaster_MV/js/plugins/MOG_TimeSystem_Hud.js
+Mogmaster_MV/img/system/TimeHud_A.png
+Mogmaster_MV/img/system/TimeHud_B.png
+Mogmaster_MV/img/system/TimeHud_C.png
+Mogmaster_MV/img/system/TimeHud_D.png
+Mogmaster_MV/img/system/TimeHud_E.png
+
+Copy these files to the right place in the game directory.
+
+Step 3:
+Start up RPGMaker MV, load your game and go to the plugin-manager
+Add MOG_Timesystem and MOG_Timesystem_HUD
+In the parameters of MOG_Timesystem set the parameter 'Tint screen' to false.  <-don't forget or you get double tinting
+
+Step 4:
+In the TerraxLighting plugin go to the parameters and set parameter 'Save daynighthours' to 0  <-don't forget or you get weird time jumps
+
+Step 5: 
+To activate the Mog Time system together with the TerraxLigthing system use the plugin call 
+Plugin command : tls_moghunter on
+You only need to call this once.
+When its activated any map with the note-tag 'mogtimesystem' will have the screen tinted by the terraxlighting depending on the mog time.
+
+Step 6:(optional, always supply 6 colors, only needs to be called once)
+If you do not like the default colors you can change them with the following plugin call:
+plugin command : tls_moghunter tint #555555 #FFEFD5 #FFFFFF #EEE8AA #555555 #111111     
+The colors are for: Dawn, Rise, Day, Set, Dusk, Night
+
+Should you need to turn it off, you can use plugin command : tls_moghunter off
+
+Step 6: It should work now, if not you can ask in the forums.
+
+
