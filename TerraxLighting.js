@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.7
+// Version: 1.3.8
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.3.7 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.3.8 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -960,7 +960,7 @@ Imported.TerraxLighting = true;
 				var darkenscreen = false;
 
 				if (searchdaynight.search('daynight') >= 0) {
-					this._addSprite(0, 0, this._maskBitmap); // daynight tag? yes.. then turn off the lights
+					this._addSprite(-20, 0, this._maskBitmap); // daynight tag? yes.. then turn off the lights
 					darkenscreen = true;
 				} else {
 					for (var i = 0; i < $dataMap.events.length; i++) {
@@ -1022,7 +1022,7 @@ Imported.TerraxLighting = true;
 
 					var canvas = this._maskBitmap.canvas;
 					var ctx = canvas.getContext("2d");
-					this._maskBitmap.fillRect(0, 0, maxX, maxY, 'black');
+					this._maskBitmap.fillRect(0, 0, maxX+20, maxY, 'black');
 
 					//ctx.globalCompositeOperation = 'lighten';
 					ctx.globalCompositeOperation = 'lighter';
@@ -1573,7 +1573,7 @@ Imported.TerraxLighting = true;
 						}
 						color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 
-						this._maskBitmap.FillRect(0, 0, maxX, maxY, color1);
+						this._maskBitmap.FillRect(0, 0, maxX+20, maxY, color1);
 					}
 
 					// *********************************** TINT **************************
@@ -1781,9 +1781,12 @@ Imported.TerraxLighting = true;
   		}
   		
 	  	grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
-	    grad.addColorStop(0, '#FFFFFF');
-	    grad.addColorStop(brightness, color1);
-	   	grad.addColorStop(1, color2);
+		if (brightness) {
+			grad.addColorStop(0, '#FFFFFF');
+		}
+		grad.addColorStop(brightness, color1);
+
+		grad.addColorStop(1, color2);
 
 	    context.save();
 	    context.fillStyle = grad;
@@ -1980,7 +1983,7 @@ Imported.TerraxLighting = true;
 		this._Terrax_Lighting_PlayerBrightness = value;
 	};
 	Game_Variables.prototype.GetPlayerBrightness = function(value) {
-		this._Terrax_Lighting_PlayerBrightness = value;
+		this._Terrax_Lighting_PlayerBrightness = value || 0.0;
 	};
 	Game_Variables.prototype.SetRadius = function(value) {
 		this._Terrax_Lighting_Radius = value;
