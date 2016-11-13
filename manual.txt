@@ -95,6 +95,7 @@ You can increase the brightness of a lightsource with the optional TileRegion 1 
 TileLight 1 OFF will turn off the lights on tile-tag 1 again 
 TileRegion 1 OFF will turn off the lights on region-number 1 again  
 TileFire and RegionFire works the same as TileLight, but with fire effect.
+TileGlow and RegionGlow works the same as TileLight, but with a slight pulsing effect.
 Make sure your map still has at least one event with lights in it, otherwise the script will not run.
  
  TileBlock and RegionBlock settings
@@ -152,6 +153,24 @@ You can use the following plugin calls to create short duration light effects fo
 plugin command: effect_on_event 003 200 #FFAAAA 50  -> Will create a lightglobe on event with id 003, Radius 200, color #FFAAAA, duration 50 frames
 plugin command: effect_on_xy 560 500 50 #FFAAAA 25 -> Will create a lightglobe on coordinates 560,500, Radius 50, color #FFAAAA, duration 25 frames
 
+A number of special effects can be added
+
+effect_on_xy 560 500 50 #FFAAAA 500 FADEIN 200   -> Will start dark and slowly fade in for 200 frames and will be visible for 500 frames
+effect_on_xy 560 500 50 #FFAAAA 500 FADEOUT 200   -> Will start light and at frame 300 slowly fade out for 200 frames
+effect_on_xy 560 500 50 #FFAAAA 500 FADEINOUT 200   -> Will fade in for 200 frames, and after that fade out for 200 frames
+
+effect_on_xy 560 500 50 #FFAAAA 500 GROW 200   -> Will start with 0 radius and slowly grow over 200 frames to full radius
+effect_on_xy 560 500 50 #FFAAAA 500 SHRINK 200   -> Will shrink the radius at the end
+effect_on_xy 560 500 50 #FFAAAA 500 GROWSHRINK 200   -> Will grow to full radius and then shrink.
+
+effect_on_xy 560 500 50 #FFAAAA 500 BIO 200  -> Combines FADEIN,GROW and FADEOUT to create a slowly forming and then fading sphere.
+
+effect_on_xy x y radius #FFAAAA duration FADEIN duration special.
+Aside from fixed values variables can also be used while scripting
+
+effect_on_xy #0001 #0002 #0003 #FFAAAA 500 will create a lightglobe on the coordinates in game variables 1 and 2,
+and the radius from game variable 3.
+See the swamp area in the demo for an example.
 
 **************** Quasi ABS compatibility ***************
 
