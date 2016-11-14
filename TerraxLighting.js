@@ -1880,7 +1880,10 @@ Imported.TerraxLighting = true;
 											tag = $dataMap.data[(5 * $dataMap.height + y) * $dataMap.width + x];
 										}  // region block
 										if (tag == tile_number) {
-											ctx.globalCompositeOperation = 'darker';
+											//ctx.globalCompositeOperation = 'darker';
+
+											ctx.globalCompositeOperation="multiply";
+
 											var x1 = (x - dx) * pw;
 											var y1 = (y - dy) * ph;
 
