@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.3.9
+// Version: 1.4.0
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.3.9 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.4.0 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -1500,6 +1500,21 @@ Imported.TerraxLighting = true;
 										var x1 = px - (dx * pw);
 										var y1 = py - (dy * ph);
 
+										// paralaxloop does something weird with coordinates.. recalc needed
+
+										if ($dataMap.scrollType === 2 || $dataMap.scrollType === 3) {
+											if (dx - 10 > px/pw) {
+												var lxjump = $gameMap.width() - (dx - px/pw);
+												x1 = (lxjump * pw);
+											}
+										}
+										if ($dataMap.scrollType === 1 || $dataMap.scrollType === 3) {
+											if (dy - 10 > py/ph) {
+												var lyjump = $gameMap.height() - (dy - py/ph);
+												y1 = (lyjump * ph);
+											}
+										}
+										//Graphics.Debug('Test',dy+" "+py+" "+y1+" "+$gameMap.height()+" "+lyjump);
 										this._maskBitmap.radialgradientFillRect(x1, y1, 0, fradius, fcolor, 'black', false);
 									}
 								} else {
@@ -1730,7 +1745,7 @@ Imported.TerraxLighting = true;
 						glow_oldseconds = glowseconds;
 						tileglow= tileglow + glow_dir;
 
-						if (tileglow > 80) {
+						if (tileglow > 120) {
 							glow_dir = -1;
 						}
 						if (tileglow <1 ) {
@@ -1830,18 +1845,20 @@ Imported.TerraxLighting = true;
 												var g = hexToRgb(tile_color).g;
 												var b = hexToRgb(tile_color).b;
 
-												r = Math.floor(r + (40-tileglow));
-												g = Math.floor(g + (40-tileglow));
-												b = Math.floor(b + (40-tileglow));
+
+												r = Math.floor(r + (60-tileglow));
+												g = Math.floor(g + (60-tileglow));
+												b = Math.floor(b + (60-tileglow));
+												//Graphics.Debug('Tiletype',tileglow+' '+r+' '+g+' '+b);
 												if ( r < 0 ) {r=0;}
 												if ( g < 0 ) {g=0;}
 												if ( b < 0 ) {b=0;}
 												if ( r > 255) {r=255;}
 												if ( g > 255) {g=255;}
 												if ( b > 255) {b=255;}
-												var newtile_radius = tile_radius+(80-(tileglow));
 
 												var newtile_color = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+												//Graphics.Debug('Tiletype',tileglow+' '+r+' '+g+' '+b+' '+newtile_color);
 												this._maskBitmap.radialgradientFillRect(x1, y1, 0, tile_radius, newtile_color, 'black', false, brightness);
 											}
 										}
