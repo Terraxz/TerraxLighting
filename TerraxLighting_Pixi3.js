@@ -856,18 +856,18 @@ Imported.TerraxLighting = true;
 	}
 
 	//OLD DEFINTION
-	//Lightmask.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
+	Lightmask.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 	//NEW DEFINITION
-	Lightmask.prototype = Object.create(PIXI.Container.prototype);
+	//Lightmask.prototype = Object.create(PIXI.Container.prototype);
 
 	Lightmask.prototype.constructor = Lightmask;
 	
 	Lightmask.prototype.initialize = function() {
 
 		// OLD DEFINITION
-		//PIXI.DisplayObjectContainer.call(this);
+		PIXI.DisplayObjectContainer.call(this);
 	    // NEW DEFINITION
-		PIXI.Container.call(this);
+		//PIXI.Container.call(this);
 
 		this._width = Graphics.width;
 	    this._height = Graphics.height;
