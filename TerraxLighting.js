@@ -2616,6 +2616,8 @@ Imported.TerraxLighting = true;
 
 	// ALIASED FROM RPG OBJECTS TO ADD LIGHTING TO CONFIG MENU
 
+	ConfigManager.TxLighting = true;
+
 	Object.defineProperty(ConfigManager, 'TxLighting', {
 		get: function() {
 			return options_lighting_on;
@@ -2636,7 +2638,7 @@ Imported.TerraxLighting = true;
 	var Alias_ConfigManager_applyData = ConfigManager.applyData;
 	ConfigManager.applyData = function(config) {
 		Alias_ConfigManager_applyData.call(this,config);
-		this.TxLighting = this.readFlag(config, 'TxLighting');
+		this.TxLighting = this.readFlag2(config, 'TxLighting');
 	};
 
 	var Window_Options_addGeneralOptions = Window_Options.prototype.addGeneralOptions;
@@ -2647,6 +2649,14 @@ Imported.TerraxLighting = true;
 		}
 	};
 
+	ConfigManager.readFlag2 = function(config, name) {
+		var value = config[name];
+		if (value !== undefined) {
+			return !!config[name];
+		} else {
+			return true;
+		}
+	};
 
 
 })();
