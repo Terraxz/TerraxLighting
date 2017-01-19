@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.4.2
+// Version: 1.4.4
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.4.2 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.4.4 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -24,6 +24,11 @@
  * @desc Adds switching the script on of off to the options menu
  * Default: Yes
  * @default Yes
+ *
+ * @param Option menu entry
+ * @desc Text item used in the option menu (change for different language)
+ * Default: Lighting effects
+ * @default Lighting effects
  *
  * @param Reset Lights
  * @desc Resets the light switches each map
@@ -100,6 +105,8 @@
  * You can reset the switches each map with the option or manualy by
  * the plugin command 'Light switch reset' 
  * You can also turn off lights with the kill-selfswitch defined in the parameters.
+ * You can change the color of the lightsources that have a id. Use plugin call
+ * 'Light color 1 #FF0000'
  *
  * Replacing the 'Light' keyworld with 'Fire' will give the lights a subtle flicker
  * You can configure the fire effect with the plugin command 'SetFire 7 10'
@@ -215,6 +222,7 @@ Imported.TerraxLighting = true;
 	var flashlightoffset = Number(parameters['Flashlight offset'] || 0);
 	var killswitch = parameters['Kill Switch'] || 'No';
 	var add_to_options = parameters['Add to options'] || 'Yes';
+	var optiontext = parameters['Option menu entry'] || 'Lighting effects';
 	var options_lighting_on = true;
 
 	var maxX = Number(parameters['Screensize X'] || 866);
@@ -236,6 +244,9 @@ Imported.TerraxLighting = true;
 	var glow_dir = 1;
 
 	var darkcount = 0;
+
+	var averagetime = [];
+	var averagetimecount = 0;
 
     var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
@@ -675,6 +686,7 @@ Imported.TerraxLighting = true;
 
 					var lightarray_id = $gameVariables.GetLightArrayId();
 					var lightarray_state = $gameVariables.GetLightArrayState();
+					var lightarray_color = $gameVariables.GetLightArrayColor();
 
 					var lightid = Number(args[1]);
 					var idfound = false;
@@ -687,10 +699,12 @@ Imported.TerraxLighting = true;
 					if (idfound == false) {
 						lightarray_id.push(lightid);
 						lightarray_state.push(true);
+						lightarray_color.push('defaultcolor');
 					}
 
 					$gameVariables.SetLightArrayId(lightarray_id);
 					$gameVariables.SetLightArrayState(lightarray_state);
+					$gameVariables.SetLightArrayColor(lightarray_color);
 				}
 
 				// *********************** TURN SPECIFIC LIGHT OFF *********************
@@ -716,6 +730,32 @@ Imported.TerraxLighting = true;
 
 				}
 
+				// *********************** SET COLOR *********************
+
+				if (args[0] === 'color') {
+
+					var newcolor = args[2];
+
+					var lightarray_id = $gameVariables.GetLightArrayId();
+					var lightarray_state = $gameVariables.GetLightArrayState();
+					var lightarray_color = $gameVariables.GetLightArrayColor();
+
+					var lightid = Number(args[1]);
+					var idfound = false;
+					for (var i = 0; i < lightarray_id.length; i++) {
+						if (lightarray_id[i] == lightid) {
+							idfound = true;
+							//lightarray_state[i] = true;
+							lightarray_color[i] = newcolor;
+						}
+					}
+
+					$gameVariables.SetLightArrayId(lightarray_id);
+					$gameVariables.SetLightArrayState(lightarray_state);
+					$gameVariables.SetLightArrayColor(lightarray_color);
+				}
+
+
 				// **************************** RESET ALL SWITCHES ***********************
 				if (args[0] === 'switch' && args[1] === 'reset') {
 
@@ -736,8 +776,10 @@ Imported.TerraxLighting = true;
 					}
 					lightarray_id = [];
 					lightarray_state = [];
+					lightarray_color = [];
 					$gameVariables.SetLightArrayId(lightarray_id);
 					$gameVariables.SetLightArrayState(lightarray_state);
+					$gameVariables.SetLightArrayColor(lightarray_color);
 				}
 			}
 
@@ -898,6 +940,12 @@ Imported.TerraxLighting = true;
 	 */
 	Lightmask.prototype._updateMask = function() {
 
+
+		// Timing function for debugging
+		var datenow = new Date();
+		var debugtimer = datenow.getTime();
+
+
 		// ****** DETECT MAP CHANGES ********
 		var map_id = $gameMap.mapId();
 		if (map_id != oldmap) {
@@ -926,6 +974,9 @@ Imported.TerraxLighting = true;
 				$gameVariables.SetLightArrayId(lightarray_id);
 				$gameVariables.SetLightArrayState(lightarray_state);
 			}
+
+
+
 		}
 
 
@@ -1107,6 +1158,9 @@ Imported.TerraxLighting = true;
 						var px = $gamePlayer._realX;
 						var py = $gamePlayer._realY;
 						var pd = $gamePlayer._direction;
+
+						//Graphics.Debug('Screen',pw+" "+ph+" "+dx+" "+dy+" "+px+" "+py);
+
 
 						var x1 = (pw / 2) + ( (px - dx) * pw);
 						var y1 = (ph / 2) + ( (py - dy) * ph);
@@ -1567,6 +1621,7 @@ Imported.TerraxLighting = true;
 							if ($gameMap.events()[i]) {
 								var note = $gameMap.events()[i].event().note;
 								var evid = $gameMap.events()[i]._eventId;
+
 								var note_args = note.split(" ");
 								var note_command = note_args.shift().toLowerCase();
 								if (note_command == "light" || note_command == "fire" || note_command == "flashlight") {
@@ -1634,11 +1689,17 @@ Imported.TerraxLighting = true;
 
 											var lightarray_id = $gameVariables.GetLightArrayId();
 											var lightarray_state = $gameVariables.GetLightArrayState();
+											var lightarray_color = $gameVariables.GetLightArrayColor();
 
 											for (var j = 0; j < lightarray_id.length; j++) {
 												if (lightarray_id[j] == lightid) {
 													// idfound = true;
 													state = lightarray_state[j];
+
+													var newcolor = lightarray_color[j];
+													if (newcolor != 'defaultcolor') {
+														colorvalue = newcolor;
+													}
 													var mapid = $gameMap.mapId();
 													var eventid = $gameMap.events()[i]._eventId;
 
@@ -2085,6 +2146,23 @@ Imported.TerraxLighting = true;
 
 						// reset drawmode to normal
 						ctx.globalCompositeOperation = 'source-over';
+
+						/*
+						var datenow = new Date();
+						var debugtimer2 = datenow.getTime();
+						var debugtime = debugtimer2-debugtimer;
+						averagetime[averagetimecount] = debugtime;
+						averagetimecount++;
+						var totalcount = 0;
+						for (var y = 0; y < averagetime.length; y++) {
+							totalcount = totalcount + averagetime[y];
+						}
+						if (averagetimecount > 600)	{
+							averagetimecount = 0;
+							Graphics.Debug('Speedtest',totalcount/600);
+						}
+						*/
+
 					}
 				}
 			}
@@ -2167,63 +2245,96 @@ Imported.TerraxLighting = true;
 	Bitmap.prototype.radialgradientFillRect = function(x1, y1, r1, r2, color1, color2, flicker, brightness, direction) {
 		x1=x1+20;
 
-		if (!brightness) { brightness = 0.0; }
-		if (!direction) {direction = 0; }
-	    var context = this._context;
-	    var grad;	  
-	    var wait = Math.floor((Math.random()*8)+1); 
-	   	if (flicker == true && wait == 1) {
-		   	var flickerradiusshift = $gameVariables.GetFireRadius();
-    		var flickercolorshift = $gameVariables.GetFireColorshift();
-		    var gradrnd = Math.floor((Math.random()*flickerradiusshift)+1);
-		  	var colorrnd = Math.floor((Math.random()*flickercolorshift)-(flickercolorshift/2)); 
-		  	
-		    var r = hexToRgb(color1).r;
-		    var g = hexToRgb(color1).g;
-		    var b = hexToRgb(color1).b;
-		    g = g + colorrnd;
-		    if (g<0) { g = 0; }
-			if (g>255) { g = 255; }
-		  	color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-		    r2 = r2 - gradrnd;  
-		    if (r2 < 0) r2=0;
-  		}
-  		
-	  	grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
-		if (brightness) {
-			grad.addColorStop(0, '#FFFFFF');
+		// clipping
+		var nx1 = Number(x1);
+		var ny1 = Number(y1);
+		var nr2 = Number(r2);
+
+		var clip = false;
+
+		if (nx1-nr2>maxX) {
+			clip = true;
 		}
-		grad.addColorStop(brightness, color1);
+		if (ny1-nr2>maxY) {
+			clip = true;
+		}
+		if (nx1+nr2<0) {
+			clip = true;
+		}
+		if (nx1+nr2<0) {
+			clip = true;
+		}
 
-		grad.addColorStop(1, color2);
+		//Graphics.Debug('Screen',startx+" "+starty+" "+endx+" "+endy+" "+nx1+" "+ny1+" "+nr2);
 
-	    context.save();
-	    context.fillStyle = grad;
-	    direction = Number(direction);
-	    var pw = $gameMap.tileWidth()/2;
-	    var ph = $gameMap.tileHeight()/2;
-	    switch(direction) {
-	    	case 0:
-	    		context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
-	       	    break;
-	   		case 1:
-	   			context.fillRect(x1-r2, y1-ph, r2*2, r2*2);
-	       	    break;
-	   		case 2:
-	   			context.fillRect(x1-r2, y1-r2, r2*1+pw, r2*2);
-	       	    break;
-	        case 3:
-	            context.fillRect(x1-r2, y1-r2, r2*2, r2*1+ph);
-	       	    break;
-	        case 4:
-	            context.fillRect(x1-pw, y1-r2, r2*2, r2*2);
-	       	    break;	       	    
-		} 
-	    
-	    
-	    // context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
-	    context.restore();
-	    this._setDirty();
+		if (clip == false) {
+
+			if (!brightness) {
+				brightness = 0.0;
+			}
+			if (!direction) {
+				direction = 0;
+			}
+			var context = this._context;
+			var grad;
+			var wait = Math.floor((Math.random() * 8) + 1);
+			if (flicker == true && wait == 1) {
+				var flickerradiusshift = $gameVariables.GetFireRadius();
+				var flickercolorshift = $gameVariables.GetFireColorshift();
+				var gradrnd = Math.floor((Math.random() * flickerradiusshift) + 1);
+				var colorrnd = Math.floor((Math.random() * flickercolorshift) - (flickercolorshift / 2));
+
+				var r = hexToRgb(color1).r;
+				var g = hexToRgb(color1).g;
+				var b = hexToRgb(color1).b;
+				g = g + colorrnd;
+				if (g < 0) {
+					g = 0;
+				}
+				if (g > 255) {
+					g = 255;
+				}
+				color1 = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+				r2 = r2 - gradrnd;
+				if (r2 < 0) r2 = 0;
+			}
+
+			grad = context.createRadialGradient(x1, y1, r1, x1, y1, r2);
+			if (brightness) {
+				grad.addColorStop(0, '#FFFFFF');
+			}
+			grad.addColorStop(brightness, color1);
+
+			grad.addColorStop(1, color2);
+
+			context.save();
+			context.fillStyle = grad;
+			direction = Number(direction);
+			var pw = $gameMap.tileWidth() / 2;
+			var ph = $gameMap.tileHeight() / 2;
+			switch (direction) {
+				case 0:
+					context.fillRect(x1 - r2, y1 - r2, r2 * 2, r2 * 2);
+					break;
+				case 1:
+					context.fillRect(x1 - r2, y1 - ph, r2 * 2, r2 * 2);
+					break;
+				case 2:
+					context.fillRect(x1 - r2, y1 - r2, r2 * 1 + pw, r2 * 2);
+					break;
+				case 3:
+					context.fillRect(x1 - r2, y1 - r2, r2 * 2, r2 * 1 + ph);
+					break;
+				case 4:
+					context.fillRect(x1 - pw, y1 - r2, r2 * 2, r2 * 2);
+					break;
+			}
+
+
+			// context.fillRect(x1-r2, y1-r2, r2*2, r2*2);
+			context.restore();
+			this._setDirty();
+		}
 	};
 	
 	// ********************************** FLASHLIGHT *************************************
@@ -2493,6 +2604,15 @@ Imported.TerraxLighting = true;
 		var default_LAS = [];
 		return this._Terrax_Lighting_LightArrayState || default_LAS;
 	};
+	Game_Variables.prototype.SetLightArrayColor = function(value) {
+		this._Terrax_Lighting_LightArrayColor = value;
+	};
+	Game_Variables.prototype.GetLightArrayColor = function() {
+		var default_LAS = [];
+		return this._Terrax_Lighting_LightArrayColor || default_LAS;
+	};
+
+
 
 	Game_Variables.prototype.SetTileArray = function(value) {
 		this._Terrax_Lighting_TileArray = value;
@@ -2645,7 +2765,7 @@ Imported.TerraxLighting = true;
 	Window_Options.prototype.addGeneralOptions = function() {
 		Window_Options_addGeneralOptions.call(this);
 		if (add_to_options == "Yes") {
-			this.addCommand('Lighting effects', 'TxLighting');
+			this.addCommand(optiontext, 'TxLighting');
 		}
 	};
 
