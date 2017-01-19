@@ -70,6 +70,7 @@ Light 250 #FFFFFF
 
  To turn on this light use plugin command : 'Light on 1'.
  To turn off the light use plugin command : 'Light off 1'.
+ To change the color of a light use plugin command : 'Light color 1 #FF0000'.
  The plugin command will also trigger SelfSwitch 'D' on the targeted light(s).
  You can reset the switches each map with the option or manualy by  the plugin command 'Light switch reset' 
  
