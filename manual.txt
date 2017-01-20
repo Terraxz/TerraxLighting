@@ -76,6 +76,11 @@ Light 250 #FFFFFF
  
 You can also turn off lights with the kill-selfswitch defined in the parameters. If you set the killswitch in the 
 parameters to 'C', the light will turn off when selfswitch C of an event is thrown. 
+
+You can let the light color cycle automaticly with the following note-tag
+Light cycle #FF0000 50 #00FF00 50 #0000FF 50
+This will let the color cycle from red to green to blue, each 50 miliseconds.
+Minimum of 2 colors, maximum of 4 colors.
  
 Events can also use the flashlight effect.
 Use 'Flashlight 8 12 #888888 1 2' in the note-tag.

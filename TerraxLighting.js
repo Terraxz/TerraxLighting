@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.4.4
+// Version: 1.4.5
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -12,7 +12,7 @@
 
 //=============================================================================
  /*:
- * @plugindesc v1.4.4 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.4.5 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -107,6 +107,11 @@
  * You can also turn off lights with the kill-selfswitch defined in the parameters.
  * You can change the color of the lightsources that have a id. Use plugin call
  * 'Light color 1 #FF0000'
+ *
+ * You can let the light color cycle automaticly with the following note-tag
+ * Light cycle #FF0000 50 #00FF00 50 #0000FF 50
+ * This will let the color cycle from red to green to blue, each 50 miliseconds.
+ * Minimum of 2 colors, maximum of 4 colors.
  *
  * Replacing the 'Light' keyworld with 'Fire' will give the lights a subtle flicker
  * You can configure the fire effect with the plugin command 'SetFire 7 10'
@@ -213,6 +218,9 @@ Imported.TerraxLighting = true;
 	var ABS_blast_grow = [];
 	var ABS_blast_mapid = [];
 
+	var colorcycle_count = [1000];
+	var colorcycle_timer = [1000];
+
 	var parameters = PluginManager.parameters('TerraxLighting');
     var player_radius = Number(parameters['Player radius']);
 	var reset_each_map = parameters['Reset Lights'] || 'No';
@@ -242,7 +250,7 @@ Imported.TerraxLighting = true;
 	var tileglow = 0;
 	var glow_oldseconds =0;
 	var glow_dir = 1;
-
+	var cycle_oldseconds=0;
 	var darkcount = 0;
 
 	var averagetime = [];
@@ -951,6 +959,12 @@ Imported.TerraxLighting = true;
 		if (map_id != oldmap) {
 			oldmap = map_id;
 
+			//clear color cycle arrays
+			for (var i = 0; i < 1000; i++) {
+				colorcycle_count[i] = 0;
+				colorcycle_timer[i] = 0;
+			}
+
 			if (reset_each_map == 'Yes' || reset_each_map == 'yes') {
 				// reset switches to false
 
@@ -1615,7 +1629,6 @@ Imported.TerraxLighting = true;
 
 						// ********** OTHER LIGHTSOURCES **************
 
-
 						var daynightset = false;
 						for (var i = 0; i < $gameMap.events().length; i++) {
 							if ($gameMap.events()[i]) {
@@ -1651,11 +1664,101 @@ Imported.TerraxLighting = true;
 
 										// light color
 										var colorvalue = note_args.shift();
-										var isValidColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(colorvalue);
-										if (!isValidColor) {
-											colorvalue = '#FFFFFF'
-										}
 
+										// Cycle colors
+										if (colorvalue == 'cycle' && evid < 1000) {
+
+											var cyclecolor0 = note_args.shift();
+											var cyclecount0 = Number(note_args.shift());
+											var cyclecolor1 = note_args.shift();
+											var cyclecount1 = Number(note_args.shift());
+											var cyclecolor2 = '#000000';
+											var cyclecount2 = 0;
+											var cyclecolor3 = '#000000';
+											var cyclecount3 = 0;
+
+											var morecycle = note_args.shift();
+											if (typeof morecycle != 'undefined') {
+												if (morecycle.substring(0, 1) == "#") {
+													cyclecolor2 = morecycle;
+													cyclecount2 = Number(note_args.shift());
+													morecycle = note_args.shift();
+													if (typeof morecycle != 'undefined') {
+														if (morecycle.substring(0, 1) == "#") {
+															cyclecolor3 = morecycle;
+															cyclecount3 = Number(note_args.shift());
+
+														} else {
+															note_args.unshift(morecycle);
+														}
+													}
+												} else {
+													note_args.unshift(morecycle);
+												}
+											}
+											// set cycle color
+											switch(colorcycle_count[evid]) {
+												case 0:
+													colorvalue = cyclecolor0;
+													break;
+												case 1:
+													colorvalue = cyclecolor1;
+													break;
+												case 2:
+													colorvalue = cyclecolor2;
+													break;
+												case 3:
+													colorvalue = cyclecolor3;
+													break;
+												default:
+													colorvalue = '#FFFFFF';
+											}
+
+											// cycle timing
+											var datenow = new Date();
+											var seconds = Math.floor(datenow.getTime() / 100);
+
+											if (seconds > cycle_oldseconds) {
+												cycle_oldseconds = seconds;
+
+												if (colorcycle_count[evid] == 0) {
+													colorcycle_timer[evid]++;
+													if (colorcycle_timer[evid] > cyclecount0) {
+														colorcycle_count[evid] = 1;
+														colorcycle_timer[evid] = 0;
+													}
+												}
+												if (colorcycle_count[evid] == 1) {
+													colorcycle_timer[evid]++;
+													if (colorcycle_timer[evid] > cyclecount1) {
+														colorcycle_count[evid] = 2;
+														colorcycle_timer[evid] = 0;
+													}
+												}
+												if (colorcycle_count[evid] == 2) {
+													colorcycle_timer[evid]++;
+													if (colorcycle_timer[evid] > cyclecount2) {
+														colorcycle_count[evid] = 3;
+														colorcycle_timer[evid] = 0;
+													}
+												}
+												if (colorcycle_count[evid] == 3) {
+													colorcycle_timer[evid]++;
+													if (colorcycle_timer[evid] > cyclecount3) {
+														colorcycle_count[evid] = 0;
+														colorcycle_timer[evid] = 0;
+													}
+												}
+												//Graphics.Debug('Cycle1',colorcycle_count[evid] + " "+ colorcycle_timer[evid]);
+												//Graphics.Debug('Cycle1',cyclecolor1+" "+cyclecount1+" - "+cyclecolor2+" "+cyclecount2+" - "+cyclecolor3+" "+cyclecount3+" - "+cyclecolor4+" "+cyclecount4);
+											}
+
+										} else {
+											var isValidColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(colorvalue);
+											if (!isValidColor) {
+												colorvalue = '#FFFFFF'
+											}
+										}
 										// brightness and direction
 
 										var brightness = 0.0;
