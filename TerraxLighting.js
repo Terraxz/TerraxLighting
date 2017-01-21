@@ -2346,6 +2346,16 @@ Imported.TerraxLighting = true;
 	// Fill gradient circle
 	
 	Bitmap.prototype.radialgradientFillRect = function(x1, y1, r1, r2, color1, color2, flicker, brightness, direction) {
+
+		var isValidColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(color1);
+		if (!isValidColor) {
+			color1 = '#000000'
+		}
+		var isValidColor2 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(color2);
+		if (!isValidColor2) {
+			color2 = '#000000'
+		}
+
 		x1=x1+20;
 
 		// clipping
@@ -2445,6 +2455,15 @@ Imported.TerraxLighting = true;
 	
 	Bitmap.prototype.radialgradientFillRect2 = function(x1, y1, r1, r2, color1, color2, direction, flashlength, flashwidth) {
 		x1=x1+20;
+
+		var isValidColor = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(color1);
+		if (!isValidColor) {
+			color1 = '#000000'
+		}
+		var isValidColor2 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(color2);
+		if (!isValidColor2) {
+			color2 = '#000000'
+		}
 
 	    var context = this._context;
 	    var grad;	
