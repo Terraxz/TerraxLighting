@@ -244,6 +244,7 @@ Imported.TerraxLighting = true;
 	var oldseconds = 0;
 	var oldseconds2 = 0;
 	var daynightdebug = false;
+	var speeddebug = false;
 	var mogdebug = false;
 	var terrax_tint_speed_old = 60;
 	var terrax_tint_target_old = '#000000'
@@ -810,6 +811,15 @@ Imported.TerraxLighting = true;
 				//scriptactive = true;
 				$gameVariables.SetStopScript(false);
 			}
+			//************************** SPEED TEST ****************************
+			// *********************** TURN SCRIPT ON/OFF *********************
+			if (command === 'script' && args[0] == 'speedtest'  && args[1]== 'on') {
+				speeddebug = true ;
+			}
+			if (command === 'script' && args[0] == 'speedtest'  && args[1]== 'off') {
+				speeddebug = false ;
+			}
+
 
 			// *********************** EFFECTS *********************
 			if (command === 'effect_on_event') {
@@ -1697,7 +1707,7 @@ Imported.TerraxLighting = true;
 												}
 											}
 											// set cycle color
-											switch(colorcycle_count[evid]) {
+											switch (colorcycle_count[evid]) {
 												case 0:
 													colorvalue = cyclecolor0;
 													break;
@@ -1905,7 +1915,10 @@ Imported.TerraxLighting = true;
 						}
 
 						// *************************** TILE TAG *********************
+						//NEW
 
+
+						//
 						var tilearray = $gameVariables.GetTileArray();
 
 						//glow/colorfade
@@ -2250,21 +2263,22 @@ Imported.TerraxLighting = true;
 						// reset drawmode to normal
 						ctx.globalCompositeOperation = 'source-over';
 
-						/*
-						var datenow = new Date();
-						var debugtimer2 = datenow.getTime();
-						var debugtime = debugtimer2-debugtimer;
-						averagetime[averagetimecount] = debugtime;
-						averagetimecount++;
-						var totalcount = 0;
-						for (var y = 0; y < averagetime.length; y++) {
-							totalcount = totalcount + averagetime[y];
+						// speedtest function
+						if (speeddebug == true) {
+							var datenow = new Date();
+							var debugtimer2 = datenow.getTime();
+							var debugtime = debugtimer2 - debugtimer;
+							averagetime[averagetimecount] = debugtime;
+							averagetimecount++;
+							var totalcount = 0;
+							for (var y = 0; y < averagetime.length; y++) {
+								totalcount = totalcount + averagetime[y];
+							}
+							if (averagetimecount > 500) {
+								averagetimecount = 0;
+								Graphics.Debug('Speedtest', totalcount / 500);
+							}
 						}
-						if (averagetimecount > 600)	{
-							averagetimecount = 0;
-							Graphics.Debug('Speedtest',totalcount/600);
-						}
-						*/
 
 					}
 				}
