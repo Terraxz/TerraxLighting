@@ -81,7 +81,13 @@ You can let the light color cycle automaticly with the following note-tag
 Light cycle #FF0000 50 #00FF00 50 #0000FF 50
 This will let the color cycle from red to green to blue, each 50 miliseconds.
 Minimum of 2 colors, maximum of 4 colors.
- 
+
+Adding SS:ABCD to the cycle command will throw the selfswitches of the event every time the light cycles.
+
+Light cycle #FF0000 50 #00FF00 50 #0000FF 50 SS:ABC0  
+this tag will cycle three colors, every time the color changes a new selfswitch is throws (A,B,C).
+
+
 Events can also use the flashlight effect.
 Use 'Flashlight 8 12 #888888 1 2' in the note-tag.
 8 is the length of the flashlights beam .
