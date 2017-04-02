@@ -1,18 +1,16 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.4.6
+// Version: 1.4.8
 //=============================================================================
 //
 // This script overwrites the following core scripts.
 //
 // Spriteset_Map.prototype.createLowerLayer
-// Game_CharacterBase.prototype.setDirection
-// Game_CharacterBase.prototype.updateMove
-
+//
 //=============================================================================
  /*:
- * @plugindesc v1.4.6 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.4.8 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -198,25 +196,25 @@
 var Imported = Imported || {};
 Imported.TerraxLighting = true;
 
-	// These are global variables so they can be used by other daynight plugins
+	// These are global variables so they can be used by other plugins
  
 	var Terrax_tint_speed = 60;
 	var Terrax_tint_target = '#000000';
-	
+
+	var Terrax_ABS_skill_x = [];
+	var Terrax_ABS_skill_y = [];
+	var Terrax_ABS_skill = [];
+
+	var Terrax_ABS_blast_x = [];
+	var Terrax_ABS_blast_y = [];
+	var Terrax_ABS_blast = [];
+	var Terrax_ABS_blast_duration = [];
+	var Terrax_ABS_blast_fade = [];
+	var Terrax_ABS_blast_grow = [];
+	var Terrax_ABS_blast_mapid = [];
+
 
 (function() {
-
-	var ABS_skill_x = [];
-	var ABS_skill_y = [];
-	var ABS_skill = [];
-
-	var ABS_blast_x = [];
-	var ABS_blast_y = [];
-	var ABS_blast = [];
-	var ABS_blast_duration = [];
-	var ABS_blast_fade = [];
-	var ABS_blast_grow = [];
-	var ABS_blast_mapid = [];
 
 	var colorcycle_count = [1000];
 	var colorcycle_timer = [1000];
@@ -887,13 +885,13 @@ Imported.TerraxLighting = true;
 					}
 					def = def + "," + command + "," + ctime;
 				}
-				ABS_blast_x.push(String(x1));
-				ABS_blast_y.push(String(y1));
-				ABS_blast.push(def);
-				ABS_blast_duration.push(-1);
-				ABS_blast_fade.push(-1);
-				ABS_blast_grow.push(-1);
-				ABS_blast_mapid.push($gameMap.mapId());
+				Terrax_ABS_blast_x.push(String(x1));
+				Terrax_ABS_blast_y.push(String(y1));
+				Terrax_ABS_blast.push(def);
+				Terrax_ABS_blast_duration.push(-1);
+				Terrax_ABS_blast_fade.push(-1);
+				Terrax_ABS_blast_grow.push(-1);
+				Terrax_ABS_blast_mapid.push($gameMap.mapId());
 			}
 			if (command === 'effect_on_xy') {
 				//Graphics.Debug('ARGS',args.length);
@@ -923,13 +921,13 @@ Imported.TerraxLighting = true;
 					}
 					def = def + "," + command + "," + ctime;
 				}
-				ABS_blast_x.push(x1);
-				ABS_blast_y.push(y1);
-				ABS_blast.push(def);
-				ABS_blast_duration.push(-1);
-				ABS_blast_fade.push(-1);
-				ABS_blast_grow.push(-1);
-				ABS_blast_mapid.push($gameMap.mapId());
+				Terrax_ABS_blast_x.push(x1);
+				Terrax_ABS_blast_y.push(y1);
+				Terrax_ABS_blast.push(def);
+				Terrax_ABS_blast_duration.push(-1);
+				Terrax_ABS_blast_fade.push(-1);
+				Terrax_ABS_blast_grow.push(-1);
+				Terrax_ABS_blast_mapid.push($gameMap.mapId());
 			}
 		}
 
@@ -949,16 +947,25 @@ Imported.TerraxLighting = true;
 	//OLD DEFINTION
 	//Lightmask.prototype = Object.create(PIXI.DisplayObjectContainer.prototype);
 	//NEW DEFINITION
-	Lightmask.prototype = Object.create(PIXI.Container.prototype);
+	//Lightmask.prototype = Object.create(PIXI.Container.prototype);
+
+	var pixitest = PIXI.VERSION.substring(0,2) == 'v2'?"PIXI.DisplayObjectContainer.prototype":"PIXI.Container.prototype";
+	Lightmask.prototype = Object.create(eval(pixitest));
 
 	Lightmask.prototype.constructor = Lightmask;
 	
 	Lightmask.prototype.initialize = function() {
 
+
+		if (PIXI.VERSION.substring(0,2) == 'v2') {
+			PIXI.DisplayObjectContainer.call(this);
+		} else {
+			PIXI.Container.call(this);
+		}
 		// OLD DEFINITION
 		//PIXI.DisplayObjectContainer.call(this);
 	    // NEW DEFINITION
-		PIXI.Container.call(this);
+		//PIXI.Container.call(this);
 
 		this._width = Graphics.width;
 	    this._height = Graphics.height;
@@ -1491,16 +1498,16 @@ Imported.TerraxLighting = true;
 
 						// SKILLS/MISSLES (effects without duration)
 
-						for (var i = 0; i < ABS_skill_x.length; i++) {
-							var settings = ABS_skill[i];
+						for (var i = 0; i < Terrax_ABS_skill_x.length; i++) {
+							var settings = Terrax_ABS_skill[i];
 							if (settings) {
 								if (settings != 'undefined') {
 									var setstring = settings.toString();
 									var lightset = setstring.split(",");
 									//Graphics.Debug('Test',setstring+" "+lightset[0]+" "+lightset[1]);
 
-									var px = ABS_skill_x[i];
-									var py = ABS_skill_y[i];
+									var px = Terrax_ABS_skill_x[i];
+									var py = Terrax_ABS_skill_y[i];
 									var x1 = px - (dx * pw);
 									var y1 = py - (dy * ph);
 
@@ -1510,16 +1517,16 @@ Imported.TerraxLighting = true;
 						}
 
 						// clear arrays after draw
-						ABS_skill_x = [];
-						ABS_skill_y = [];
-						ABS_skill = [];
+						Terrax_ABS_skill_x = [];
+						Terrax_ABS_skill_y = [];
+						Terrax_ABS_skill = [];
 
 						// BLASTS (effect with duration)
 
 
 
-						for (var i = 0; i < ABS_blast_x.length; i++) {
-							var settings = ABS_blast[i];
+						for (var i = 0; i < Terrax_ABS_blast_x.length; i++) {
+							var settings = Terrax_ABS_blast[i];
 							if (settings) {
 								if (settings != 'undefined') {
 									var setstring = settings.toString();
@@ -1533,8 +1540,8 @@ Imported.TerraxLighting = true;
 
 									var lightset = setstring.split(",");
 
-									if (Number(lightset[2]) > 0 && ABS_blast_duration[i] == -1) {
-										ABS_blast_duration[i] = lightset[2]
+									if (Number(lightset[2]) > 0 && Terrax_ABS_blast_duration[i] == -1) {
+										Terrax_ABS_blast_duration[i] = lightset[2]
 									}
 
 									var fcolor = lightset[1];
@@ -1546,15 +1553,15 @@ Imported.TerraxLighting = true;
 
 											var fadelength = Number(lightset[4]);   // number of frames to fade in
 
-											if (ABS_blast_fade[i] == -1) {
-												ABS_blast_fade[i] = 0;
+											if (Terrax_ABS_blast_fade[i] == -1) {
+												Terrax_ABS_blast_fade[i] = 0;
 											}
-											if (ABS_blast_fade[i] < fadelength) {
-												ABS_blast_fade[i] = ABS_blast_fade[i] + 1;
+											if (Terrax_ABS_blast_fade[i] < fadelength) {
+												Terrax_ABS_blast_fade[i] = Terrax_ABS_blast_fade[i] + 1;
 
 												var startcolor = "#000000";
 												var targetcolor = lightset[1];
-												var fadecount = ABS_blast_fade[i];
+												var fadecount = Terrax_ABS_blast_fade[i];
 
 												var r = hexToRgb(startcolor).r;
 												var g = hexToRgb(startcolor).g;
@@ -1592,8 +1599,8 @@ Imported.TerraxLighting = true;
 												fcolor = "#" + ((1 << 24) + (r3 << 16) + (g3 << 8) + b3).toString(16).slice(1);
 												//Graphics.Debug('FADEIN COLOR', fcolor + " " + r + " " + r2 + " " + stepR + " " + r3);
 
-												if (ABS_blast_fade[i] == fadelength) {
-													ABS_blast_fade[i] = 100000;  // for fadeinout
+												if (Terrax_ABS_blast_fade[i] == fadelength) {
+													Terrax_ABS_blast_fade[i] = 100000;  // for fadeinout
 												}
 											}
 										}
@@ -1601,16 +1608,16 @@ Imported.TerraxLighting = true;
 										if (lightset[3] == 'FADEOUT') {
 
 											var fadelength = Number(lightset[4]);   // number of frames to fade out
-											if (ABS_blast_fade[i] == -1 && ABS_blast_duration[i] < fadelength) {
+											if (Terrax_ABS_blast_fade[i] == -1 && Terrax_ABS_blast_duration[i] < fadelength) {
 												// start fading when blastduration equals fadelength
-												ABS_blast_fade[i] = 0;
+												Terrax_ABS_blast_fade[i] = 0;
 											}
-											if (ABS_blast_fade[i] < fadelength && ABS_blast_fade[i] >= 0) {
-												ABS_blast_fade[i] = ABS_blast_fade[i] + 1;
-												//Graphics.Debug('FADEOUT',ABS_blast_fade[i]);
+											if (Terrax_ABS_blast_fade[i] < fadelength && Terrax_ABS_blast_fade[i] >= 0) {
+												Terrax_ABS_blast_fade[i] = Terrax_ABS_blast_fade[i] + 1;
+												//Graphics.Debug('FADEOUT',Terrax_ABS_blast_fade[i]);
 												var startcolor = lightset[1];
 												var targetcolor = "#000000";
-												var fadecount = ABS_blast_fade[i];
+												var fadecount = Terrax_ABS_blast_fade[i];
 
 												var r = hexToRgb(startcolor).r;
 												var g = hexToRgb(startcolor).g;
@@ -1653,16 +1660,16 @@ Imported.TerraxLighting = true;
 										if (lightset[3] == 'FADEINOUT' || lightset[3] == 'BIO') {
 											// fadeout only, fadein is handled by fadein
 											var fadelength = Number(lightset[4]);   // number of frames to fade out
-											if (ABS_blast_fade[i] == 100000 && ABS_blast_duration[i] < fadelength) {
+											if (Terrax_ABS_blast_fade[i] == 100000 && Terrax_ABS_blast_duration[i] < fadelength) {
 												// start fading when blastduration equals fadelength
-												ABS_blast_fade[i] = 100001;
+												Terrax_ABS_blast_fade[i] = 100001;
 											}
-											if (ABS_blast_fade[i] - 100000 < fadelength && ABS_blast_fade[i] > 100000) {
-												ABS_blast_fade[i] = ABS_blast_fade[i] + 1;
-												//Graphics.Debug('FADEOUT',ABS_blast_fade[i]);
+											if (Terrax_ABS_blast_fade[i] - 100000 < fadelength && Terrax_ABS_blast_fade[i] > 100000) {
+												Terrax_ABS_blast_fade[i] = Terrax_ABS_blast_fade[i] + 1;
+												//Graphics.Debug('FADEOUT',Terrax_ABS_blast_fade[i]);
 												var startcolor = lightset[1];
 												var targetcolor = "#000000";
-												var fadecount = ABS_blast_fade[i] - 100000;
+												var fadecount = Terrax_ABS_blast_fade[i] - 100000;
 
 												var r = hexToRgb(startcolor).r;
 												var g = hexToRgb(startcolor).g;
@@ -1707,28 +1714,28 @@ Imported.TerraxLighting = true;
 
 											var growlength = Number(lightset[4]);   // number of frames to grow
 
-											if (ABS_blast_grow[i] == -1) {
-												ABS_blast_grow[i] = 0;
+											if (Terrax_ABS_blast_grow[i] == -1) {
+												Terrax_ABS_blast_grow[i] = 0;
 											}
-											if (ABS_blast_grow[i] < growlength) {
+											if (Terrax_ABS_blast_grow[i] < growlength) {
 
 												if (lightset[3] == 'BIO') {
-													ABS_blast_grow[i] = ABS_blast_grow[i] + 0.5;
+													Terrax_ABS_blast_grow[i] = Terrax_ABS_blast_grow[i] + 0.5;
 												} else {
-													ABS_blast_grow[i] = ABS_blast_grow[i] + 1;
+													Terrax_ABS_blast_grow[i] = Terrax_ABS_blast_grow[i] + 1;
 												}
 
 												var startradius = 0;
 												var targetradius = lightset[0];
-												var radiuscount = ABS_blast_grow[i];
+												var radiuscount = Terrax_ABS_blast_grow[i];
 
 												var step = (targetradius - startradius) / (growlength);
 
 												fradius = Math.floor(step * radiuscount);
 
 											}
-											if (ABS_blast_grow[i] == growlength) {
-												ABS_blast_grow[i] = 100000;
+											if (Terrax_ABS_blast_grow[i] == growlength) {
+												Terrax_ABS_blast_grow[i] = 100000;
 											}
 										}
 
@@ -1736,15 +1743,15 @@ Imported.TerraxLighting = true;
 
 											var shrinklength = Number(lightset[4]);   // number of frames to shrink
 
-											if (ABS_blast_grow[i] == -1 && ABS_blast_duration[i] < shrinklength) {
-												ABS_blast_grow[i] = 0;
+											if (Terrax_ABS_blast_grow[i] == -1 && Terrax_ABS_blast_duration[i] < shrinklength) {
+												Terrax_ABS_blast_grow[i] = 0;
 											}
-											if (ABS_blast_grow[i] < shrinklength && ABS_blast_grow[i] >= 0) {
-												ABS_blast_grow[i] = ABS_blast_grow[i] + 1;
+											if (Terrax_ABS_blast_grow[i] < shrinklength && Terrax_ABS_blast_grow[i] >= 0) {
+												Terrax_ABS_blast_grow[i] = Terrax_ABS_blast_grow[i] + 1;
 
 												var startradius = lightset[0];
 												var targetradius = 0;
-												var radiuscount = ABS_blast_grow[i];
+												var radiuscount = Terrax_ABS_blast_grow[i];
 
 												var step = (startradius - targetradius ) / (shrinklength);
 												fradius = Number(lightset[0]) - Math.floor(step * radiuscount);
@@ -1757,17 +1764,17 @@ Imported.TerraxLighting = true;
 											// GROW is handled in grow
 											var shrinklength = Number(lightset[4]);   // number of frames to shrink
 
-											//Graphics.Debug('GROWSHRINK',ABS_blast_grow[i]);
+											//Graphics.Debug('GROWSHRINK',Terrax_ABS_blast_grow[i]);
 
-											if (ABS_blast_grow[i] == 100000 && ABS_blast_duration[i] < shrinklength) {
-												ABS_blast_grow[i] = 100001;
+											if (Terrax_ABS_blast_grow[i] == 100000 && Terrax_ABS_blast_duration[i] < shrinklength) {
+												Terrax_ABS_blast_grow[i] = 100001;
 											}
-											if (ABS_blast_grow[i] - 100000 < shrinklength && ABS_blast_grow[i] > 100000) {
-												ABS_blast_grow[i] = ABS_blast_grow[i] + 1;
+											if (Terrax_ABS_blast_grow[i] - 100000 < shrinklength && Terrax_ABS_blast_grow[i] > 100000) {
+												Terrax_ABS_blast_grow[i] = Terrax_ABS_blast_grow[i] + 1;
 
 												var startradius = lightset[0];
 												var targetradius = 0;
-												var radiuscount = ABS_blast_grow[i] - 100000;
+												var radiuscount = Terrax_ABS_blast_grow[i] - 100000;
 
 												var step = (startradius - targetradius ) / (shrinklength);
 												fradius = Number(lightset[0]) - Math.floor(step * radiuscount);
@@ -1778,12 +1785,12 @@ Imported.TerraxLighting = true;
 									}
 
 
-									if (ABS_blast_duration[i] > 0) {
-										ABS_blast_duration[i]--;
-										//Graphics.Debug('Test',i+" "+lightset[0]+" "+lightset[1]+" "+ABS_blast_duration[i]);
-										if (ABS_blast_mapid[i] == $gameMap.mapId()) {
-											var px = ABS_blast_x[i];
-											var py = ABS_blast_y[i];
+									if (Terrax_ABS_blast_duration[i] > 0) {
+										Terrax_ABS_blast_duration[i]--;
+										//Graphics.Debug('Test',i+" "+lightset[0]+" "+lightset[1]+" "+Terrax_ABS_blast_duration[i]);
+										if (Terrax_ABS_blast_mapid[i] == $gameMap.mapId()) {
+											var px = Terrax_ABS_blast_x[i];
+											var py = Terrax_ABS_blast_y[i];
 
 											var x1 = px - (dx * pw);
 											var y1 = py - (dy * ph);
@@ -1809,26 +1816,26 @@ Imported.TerraxLighting = true;
 											this._maskBitmap.radialgradientFillRect(x1, y1, 0, fradius, fcolor, '#000000', false);
 										}
 									} else {
-										ABS_blast[i] = "DELETE";
+										Terrax_ABS_blast[i] = "DELETE";
 									}
 								}
 							}
 						}
 
 						// remove all expired items (not done in previous loop because it cases flickering)
-						for (var i = 0; i < ABS_blast_x.length; i++) {
-							var settings = ABS_blast[i];
+						for (var i = 0; i < Terrax_ABS_blast_x.length; i++) {
+							var settings = Terrax_ABS_blast[i];
 							if (settings) {
 								if (settings != 'undefined') {
 									var setstring = settings.toString();
 									if (setstring == "DELETE") {
-										ABS_blast_x.splice(i, 1);
-										ABS_blast_y.splice(i, 1);
-										ABS_blast.splice(i, 1);
-										ABS_blast_duration.splice(i, 1);
-										ABS_blast_mapid.splice(i, 1);
-										ABS_blast_fade.splice(i, 1);
-										ABS_blast_grow.splice(i, 1);
+										Terrax_ABS_blast_x.splice(i, 1);
+										Terrax_ABS_blast_y.splice(i, 1);
+										Terrax_ABS_blast.splice(i, 1);
+										Terrax_ABS_blast_duration.splice(i, 1);
+										Terrax_ABS_blast_mapid.splice(i, 1);
+										Terrax_ABS_blast_fade.splice(i, 1);
+										Terrax_ABS_blast_grow.splice(i, 1);
 									}
 								}
 							}
@@ -1978,46 +1985,68 @@ Imported.TerraxLighting = true;
 
 												if (colorcycle_count[evid] == 0) {
 													colorcycle_timer[evid]++;
-													if (switch0 != '0') {
-														key = [map_id, evid, switch0];
-														$gameSelfSwitches.setValue(key, true);
-													}
+
 													if (colorcycle_timer[evid] > cyclecount0) {
 														colorcycle_count[evid] = 1;
 														colorcycle_timer[evid] = 0;
+														if (switch1 != '0') {
+															key = [map_id, evid, switch1];
+															$gameSelfSwitches.setValue(key, true);
+														}
+													} else {
+														if (switch0 != '0') {
+															key = [map_id, evid, switch0];
+															$gameSelfSwitches.setValue(key, true);
+														}
 													}
+
 												}
 												if (colorcycle_count[evid] == 1) {
 													colorcycle_timer[evid]++;
-													if (switch1 != '0') {
-														key = [map_id, evid, switch1];
-														$gameSelfSwitches.setValue(key, true);
-													}
 													if (colorcycle_timer[evid] > cyclecount1) {
 														colorcycle_count[evid] = 2;
 														colorcycle_timer[evid] = 0;
+														if (switch2 != '0') {
+															key = [map_id, evid, switch2];
+															$gameSelfSwitches.setValue(key, true);
+														}
+													} else {
+														if (switch1 != '0') {
+															key = [map_id, evid, switch1];
+															$gameSelfSwitches.setValue(key, true);
+														}
 													}
 												}
 												if (colorcycle_count[evid] == 2) {
 													colorcycle_timer[evid]++;
-													if (switch2 != '0') {
-														key = [map_id, evid, switch2];
-														$gameSelfSwitches.setValue(key, true);
-													}
 													if (colorcycle_timer[evid] > cyclecount2) {
 														colorcycle_count[evid] = 3;
 														colorcycle_timer[evid] = 0;
+														if (switch3 != '0') {
+															key = [map_id, evid, switch3];
+															$gameSelfSwitches.setValue(key, true);
+														}
+													} else {
+														if (switch2 != '0') {
+															key = [map_id, evid, switch2];
+															$gameSelfSwitches.setValue(key, true);
+														}
 													}
 												}
 												if (colorcycle_count[evid] == 3) {
 													colorcycle_timer[evid]++;
-													if (switch3 != '0') {
-														key = [map_id, evid, switch3];
-														$gameSelfSwitches.setValue(key, true);
-													}
 													if (colorcycle_timer[evid] > cyclecount3) {
 														colorcycle_count[evid] = 0;
 														colorcycle_timer[evid] = 0;
+														if (switch0 != '0') {
+															key = [map_id, evid, switch0];
+															$gameSelfSwitches.setValue(key, true);
+														}
+													} else {
+														if (switch3 != '0') {
+															key = [map_id, evid, switch3];
+															$gameSelfSwitches.setValue(key, true);
+														}
 													}
 												}
 												//Graphics.Debug('cycleswitch',switch0 + " "+ switch1+ " "+ switch2+ " "+ switch3);
@@ -3033,89 +3062,17 @@ Imported.TerraxLighting = true;
 	
 	};
 
-	// OVERWRITTEN FROM QUASI ABS TO ADD LIGHTSOURCES TO MISSLES AND END ANIMATIONS
-	// Skill_Sequencer
-	//
-	// Handles the skill sequence for Quasi ABS
-	function Skill_Sequencer() {
-		this.initialize.apply(this, arguments);
-	}
+	// ALLIASED Move event location => reload map.
 
-	Skill_Sequencer.prototype.update = function() {
-		if (this._skill.break) {
-			var i = this._character._skillLocked.indexOf(this._skill);
-			if (i >= 0) {
-				this._character._skillLocked.splice(i, 1);
-			}
-			this._character._casting = false;
-			QuasiABS.Manager.removePicture(this._skill.picture);
-			QuasiABS.Manager.removePicture(this._skill.trail);
-			QuasiABS.Manager.removePicture(this._skill.pictureCollider);
-			i = this._character._activeSkills.indexOf(this._skill);
-			this._character._activeSkills.splice(i, 1);
-			return;
-		}
-		if (this._skill.moving) {
-
-			// ADDED
-			ABS_skill_x.push(this._skill.collider.center.x);
-			ABS_skill_y.push(this._skill.collider.center.y);
-			ABS_skill.push(this._skill.settings.tx_missle);
-
-			this.updateSkillPosition();
-		}
-		if (this._waitCount > 0) {
-			this._waitCount--;
-			return;
-		}
-		if (this._waitForUserMove || this._waitForUserJump || this._waitForPose) {
-			if (!this._character.isMoving())   this._waitForUserMove = false;
-			if (!this._character.isJumping())  this._waitForUserJump = false;
-			if (!this._character._posePlaying) this._waitForPose = false;
-		}
-		if (this._waitForMove || this._waitForUserMove ||
-			this._waitForUserJump || this._waitForPose) {
-			return;
-		}
-		var sequence = this._skill.sequence.shift();
-		if (sequence) {
-			var action = sequence.split(' ');
-
-			// TX ADDED Trigger
-			if (action[0].toLowerCase() == "trigger") {
-				ABS_blast_x.push(this._skill.collider.center.x);
-				ABS_blast_y.push(this._skill.collider.center.y);
-				ABS_blast.push(this._skill.settings.tx_blast);
-				ABS_blast_duration.push(-1);
-				ABS_blast_fade.push(-1);
-				ABS_blast_grow.push(-1);
-				ABS_blast_mapid.push($gameMap.mapId());
-			}
-
-			this.startAction(action);
-		}
-		if (this._skill.sequence.length === 0) {
-			if (!this._skill.moving) {
-				var i = this._character._activeSkills.indexOf(this._skill);
-				QuasiABS.Manager.removePicture(this._skill.picture);
-				QuasiABS.Manager.removePicture(this._skill.trail);
-				QuasiABS.Manager.removePicture(this._skill.pictureCollider);
-				this._character._activeSkills.splice(i, 1);
-
-				// TX ADDED On hit
-				ABS_blast_x.push(this._skill.collider.center.x);
-				ABS_blast_y.push(this._skill.collider.center.y);
-				ABS_blast.push(this._skill.settings.tx_onhit);
-				ABS_blast_duration.push(-1);
-				ABS_blast_fade.push(-1);
-				ABS_blast_grow.push(-1);
-				ABS_blast_mapid.push($gameMap.mapId());
-
-			}
-		}
+	var Alias_Game_Interpreter_command203 = Game_Interpreter.prototype.command203;
+	Game_Interpreter.prototype.command203 = function() {
+		Alias_Game_Interpreter_command203.call(this);
+		ReloadMapEvents();
+		return true;
 	};
 
-	// ALIASED FROM RPG OBJECTS TO ADD LIGHTING TO CONFIG MENU
+
+// ALIASED FROM RPG OBJECTS TO ADD LIGHTING TO CONFIG MENU
 
 	ConfigManager.TxLighting = true;
 
@@ -3158,6 +3115,9 @@ Imported.TerraxLighting = true;
 			return true;
 		}
 	};
+
+
+
 
 
 })();
