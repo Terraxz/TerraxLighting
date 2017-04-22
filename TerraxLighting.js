@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.4.8
+// Version: 1.4.9
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -10,7 +10,7 @@
 //
 //=============================================================================
  /*:
- * @plugindesc v1.4.8 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.4.9 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -1157,6 +1157,38 @@ Imported.TerraxLighting = true;
 		var map_id = $gameMap.mapId();
 		if (map_id != oldmap) {
 			oldmap = map_id;
+
+			// set mog-tints on map change
+			if ($gameVariables.GetMog() == true) {
+				var searchdaynight = "";
+				if (typeof $dataMap.note != 'undefined') {
+					searchdaynight = $dataMap.note.toLowerCase();
+				}
+				if (searchdaynight.search('mogtime') >= 0) {
+					var new_phase = 0;
+					if ($gameSwitches.value(21)) {	new_phase = 0; }
+					if ($gameSwitches.value(22)) {	new_phase = 1; }
+					if ($gameSwitches.value(23)) {	new_phase = 2; }
+					if ($gameSwitches.value(24)) {	new_phase = 3; }
+					if ($gameSwitches.value(25)) {	new_phase = 4; }
+					if ($gameSwitches.value(26)) {	new_phase = 5; }
+					moghunter_phase = new_phase;
+					var newtint = '#000000';
+					var mogtint = $gameVariables.GetMogTintArray();
+					if (new_phase == 0) { newtint = mogtint[0]; }
+					if (new_phase == 1) { newtint = mogtint[1]; }
+					if (new_phase == 2) { newtint = mogtint[2]; }
+					if (new_phase == 3) { newtint = mogtint[3]; }
+					if (new_phase == 4) { newtint = mogtint[4]; }
+					if (new_phase == 5) { newtint = mogtint[5]; }
+					$gameVariables.SetTintTarget(newtint);
+					$gameVariables.SetTint(newtint);
+				} else {
+					$gameVariables.SetTintTarget('#000000');
+					$gameVariables.SetTint('#000000');
+				}
+			}
+
 
 			// recalc tile and region tags.
 			ReloadTagArea();
