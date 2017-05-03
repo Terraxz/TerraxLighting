@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.4.9
+// Version: 1.5.0
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -10,7 +10,7 @@
 //
 //=============================================================================
  /*:
- * @plugindesc v1.4.9 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.5.0 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -417,13 +417,14 @@ Imported.TerraxLighting = true;
 				}
 				if (args[0] === 'tint') {
 
-					if (args.length = 7) {
+					if (args.length == 7) {
 						var mogtint = $gameVariables.GetMogTintArray();
 						for (var i = 0; i <= 5; i++) {
 							var tintcolor = args[i];
 							var isValidColor3 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tintcolor);
 							if (isValidColor3 == true) {
 								mogtint[i] = tintcolor;
+								Graphics.Debug('TEST',tintcolor);
 								$gameVariables.SetMogTintArray(mogtint);
 							}
 						}
@@ -1002,31 +1003,31 @@ Imported.TerraxLighting = true;
 
 		for (var i = 0; i < event_eventcount; i++) {
 			if ($gameMap.events()[i]) {
+				if($gameMap.events()[i].event() !== null) {
+					var note = $gameMap.events()[i].event().note;
 
-				var note = $gameMap.events()[i].event().note;
+					var note_args = note.split(" ");
+					var note_command = note_args.shift().toLowerCase();
 
-				var note_args = note.split(" ");
-				var note_command = note_args.shift().toLowerCase();
+					if (note_command == "light" || note_command == "fire" || note_command == "flashlight" || note_command == "daynight") {
 
-				if (note_command == "light" || note_command == "fire" || note_command == "flashlight" || note_command == "daynight") {
-
-					event_note.push(note);
-					event_id.push($gameMap.events()[i]._eventId);
-					event_x.push($gameMap.events()[i]._realX);
-					event_y.push($gameMap.events()[i]._realY);
-					event_dir.push($gameMap.events()[i]._direction);
-					event_moving.push($gameMap.events()[i]._moveType || $gameMap.events()[i]._moveRouteForcing);
-					event_stacknumber.push(i);
+						event_note.push(note);
+						event_id.push($gameMap.events()[i]._eventId);
+						event_x.push($gameMap.events()[i]._realX);
+						event_y.push($gameMap.events()[i]._realY);
+						event_dir.push($gameMap.events()[i]._direction);
+						event_moving.push($gameMap.events()[i]._moveType || $gameMap.events()[i]._moveRouteForcing);
+						event_stacknumber.push(i);
+					}
+					//Graphics.Debug('Reload movetype',$gameMap.events()[i]._moveRouteForcing)
+					// *********************************** DAY NIGHT Setting **************************
+					daynightset = false;
+					var mapnote = $dataMap.note.toLowerCase();
+					var searchnote = mapnote.search("daynight");
+					if (searchnote >= 0 || note_command == "daynight") {
+						daynightset = true;
+					}
 				}
-				//Graphics.Debug('Reload movetype',$gameMap.events()[i]._moveRouteForcing)
-				// *********************************** DAY NIGHT Setting **************************
-				daynightset = false;
-				var mapnote = $dataMap.note.toLowerCase();
-				var searchnote = mapnote.search("daynight");
-				if (searchnote >= 0 || note_command == "daynight") {
-					daynightset = true;
-				}
-
 			}
 		}
 	}

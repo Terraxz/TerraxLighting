@@ -1,19 +1,16 @@
 //=============================================================================
 // Terrax Plugins - Quasi ABS support for  Terrax Lighting system
 // TerraxLighting.js
-// Version: 1.1
+// Version: 1.2
 //=============================================================================
 //
 
 //=============================================================================
  /*:
- * @plugindesc v1.1 Support for linking QuasiABS with TerraxLightingSystem
+ * @plugindesc v1.2 Support for linking QuasiABS with TerraxLightingSystem
  * @author Terrax
  *
  * @help
- *
- * ONLY USE THIS PLUGIN WHEN YOU HAVE QUASI ABS INSTALLED, PUT THIS SCRIPT BELOW THE QUASI ABS PLUGIN!!!
- *
  * The following definitions can be added to the QuasiABS settings in the database - skill-settings
  *
  * tx_missle: 25, #FF0000
@@ -25,8 +22,6 @@
  * tx_onhitNPC: 100, #FFAA00, 15
  * Will give a large yellow lightflash when the missle impacts with an NPC character.
  *
- * tx_state: 50, #FFAA00, 300 , FADEOUT, 20
- * Will give a 300 frame lightsource to the NPC, used to display burning, it will fadeout on the last 20 frames
  *
  * Example :
  *
@@ -37,8 +32,13 @@
  *   tx_missle: 25, #FF0000
  *   tx_onhit: 30, #FFAA00, 10, FADEOUT, 5
  *   tx_onhitNPC: 100, #FFAA00, 15
- *   tx_state: 50, #FFAA00, 300 , FADEOUT, 20
  * </absSettings>
+ *
+ *
+ * To make a state give light (for burning for example) you can define the radius and color in the note-tag of the state
+ * with the following definition.
+ * Database -> States -> Notetag ->  <TX>TX:50,#FFAA00;</TX>
+ * for a light effect with radius 50 and color #FFAA00.
  *
  * Released under the MIT license,
  * if used for commercial projects feel free to make a donation or 
@@ -135,8 +135,12 @@ Imported.TerraxLightingQuasiABS = true;
 		}
 
 
-
 	};
+
+	Skill_Sequencer.prototype.updateState = function() {
+
+	}
+
 
 	Graphics.Debug2 = function(name, message) {
 		if (this._errorPrinter) {
@@ -163,7 +167,7 @@ Imported.TerraxLightingQuasiABS = true;
 			var tx_y = targets[i].cy()-$gameMap.tileHeight()/2;
 			var tx_set = item.settings.tx_state;
 
-			action.absApply(targets[i].battler(),tx_x,tx_y,tx_set);
+			action.absApply(targets[i].battler());
 
 			// TX ADDED OnHitNPC
 			Terrax_ABS_blast_x.push(targets[i].cx()-$gameMap.tileWidth()/2);
@@ -179,46 +183,58 @@ Imported.TerraxLightingQuasiABS = true;
 		}
 	};
 
-	Game_Action.prototype.absApply = function(target,tx_x,tx_y,tx_set) {
-		this._isAbs = true;
-		var result = target.result();
-		this._realSubject.clearResult();
-		result.clear();
-		result.physical = this.isPhysical();
-		result.drain = this.isDrain();
-		if (this.item().damage.type > 0) {
-			result.critical = (Math.random() < this.itemCri(target));
-			var value = this.makeDamageValue(target, result.critical);
-			this.executeDamage(target, value);
-			target.startDamagePopup();
+	Game_CharacterBase.prototype.updateABS = function() {
+		if (this.battler())  {
+			if (this.battler().hp <= 0) return this.onDeath();
+			this.updateSkills();
+			this.battler().updateABS(this._realX,this._realY);
 		}
-
-		target.result().success = false;
-		this.item().effects.forEach(function(effect) {
-			this.applyItemEffect(target, effect);
-		}, this);
-
-		if (target.result().success == true) {
-			// TX ADDED OnState
-			Terrax_ABS_blast_x.push(tx_x);
-			Terrax_ABS_blast_y.push(tx_y);
-			Terrax_ABS_blast.push(tx_set);
-			Terrax_ABS_blast_duration.push(-1);
-			Terrax_ABS_blast_fade.push(-1);
-			Terrax_ABS_blast_grow.push(-1);
-			Terrax_ABS_blast_mapid.push($gameMap.mapId());
-		}
-
-		this.applyItemUserEffect(target);
-		if (Imported.Quasi_QEvents) {
-			this.applyQEvent(target);
-		} else {
-			this.applyGlobal(); // Run common events
-		}
-		this._isAbs = false;
 	};
 
+	Game_Battler.prototype.updateABS = function(x,y) {
+		for (var i = 0; i < this.states().length; i++) {
+			this.updateStateSteps(this.states()[i],x,y);
+		}
+		//this.showAddedStates();   //Currently does nothing, so no need to run it
+		//this.showRemovedStates(); //Currently does nothing, so no need to run it
+	};
 
+	Game_Battler.prototype.updateStateSteps = function(state,x,y) {
+		if (!state.removeByWalking) return;
+		if (this._stateSteps[state.id] >= 0) {
+			if (this._stateSteps[state.id] % this.stepsForTurn() === 0) {
+				this.onTurnEnd();
+				this.result().damageIcon = $dataStates[state.id].iconIndex;
+				this.startDamagePopup();
+				if (this._stateSteps[state.id] === 0) this.removeState(state.id);
+			}
+			this._stateSteps[state.id]--;
+
+			// ADDED
+			var statenote = $dataStates[state.id].note;
+
+			if (statenote) {
+				var searchnote = statenote.indexOf("TX:");
+				if (searchnote >= 0) {
+					var closetag = statenote.indexOf(";",searchnote);
+					var txdata = statenote.substring(searchnote+3, closetag);
+
+					//Graphics.Debug2('state',$dataStates[state.id].note+ " "+txdata);
+
+					var tw = $gameMap.tileWidth();
+					var ty = $gameMap.tileHeight();
+					var x1 = (x * tw) + (tw/2);
+					var y1 = (y * ty) + (ty/2);
+
+					Terrax_ABS_skill_x.push(x1);
+					Terrax_ABS_skill_y.push(y1);
+					Terrax_ABS_skill.push(txdata);
+
+				}
+			}
+
+		}
+	};
 
 })();
 
