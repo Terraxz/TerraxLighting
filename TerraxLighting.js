@@ -1,7 +1,7 @@
 //=============================================================================
 // Terrax Plugins - Lighting system
 // TerraxLighting.js
-// Version: 1.5.0
+// Version: 1.5.1
 //=============================================================================
 //
 // This script overwrites the following core scripts.
@@ -10,7 +10,7 @@
 //
 //=============================================================================
  /*:
- * @plugindesc v1.5.0 Creates an extra layer that darkens a map and adds lightsources!
+ * @plugindesc v1.5.1 Creates an extra layer that darkens a map and adds lightsources!
  * @author Terrax
  *
  * @param Player radius
@@ -309,7 +309,8 @@ Imported.TerraxLighting = true;
 					tiletype = 8;
 				}
 
-				var tilenumber = Number(args[0]);
+				//var tilenumber = Number(args[0]);
+				var tilenumber = Number(eval(args[0]));
 				var tile_on = 0;
 				if (args[1] === 'on' || args[1] === 'ON') {
 					tile_on = 1;
@@ -424,7 +425,7 @@ Imported.TerraxLighting = true;
 							var isValidColor3 = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(tintcolor);
 							if (isValidColor3 == true) {
 								mogtint[i] = tintcolor;
-								Graphics.Debug('TEST',tintcolor);
+								//Graphics.Debug('TEST',tintcolor);
 								$gameVariables.SetMogTintArray(mogtint);
 							}
 						}
@@ -719,13 +720,17 @@ Imported.TerraxLighting = true;
 						if (lightarray_id[i] == lightid) {
 							idfound = true;
 							lightarray_state[i] = true;
+							//Graphics.Debug('state id',i);
 						}
 					}
 					if (idfound == false) {
 						lightarray_id.push(lightid);
 						lightarray_state.push(true);
 						lightarray_color.push('defaultcolor');
+						//Graphics.Debug('new state id',i);
 					}
+
+					//Graphics.Debug("lightarrays",lightarray_id.length+' '+lightarray_state.length+' '+lightarray_color.length )
 
 					$gameVariables.SetLightArrayId(lightarray_id);
 					$gameVariables.SetLightArrayState(lightarray_state);
@@ -737,6 +742,7 @@ Imported.TerraxLighting = true;
 
 					var lightarray_id = $gameVariables.GetLightArrayId();
 					var lightarray_state = $gameVariables.GetLightArrayState();
+					var lightarray_color = $gameVariables.GetLightArrayColor();
 
 					var lightid = Number(args[1]);
 					var idfound = false;
@@ -749,10 +755,11 @@ Imported.TerraxLighting = true;
 					if (idfound == false) {
 						lightarray_id.push(lightid);
 						lightarray_state.push(false);
+						lightarray_color.push('defaultcolor');
 					}
 					$gameVariables.SetLightArrayId(lightarray_id);
 					$gameVariables.SetLightArrayState(lightarray_state);
-
+					$gameVariables.SetLightArrayColor(lightarray_color);
 				}
 
 				// *********************** SET COLOR *********************
@@ -1003,7 +1010,7 @@ Imported.TerraxLighting = true;
 
 		for (var i = 0; i < event_eventcount; i++) {
 			if ($gameMap.events()[i]) {
-				if($gameMap.events()[i].event() !== null) {
+				if($gameMap.events()[i].event()) {
 					var note = $gameMap.events()[i].event().note;
 
 					var note_args = note.split(" ");
@@ -1207,6 +1214,7 @@ Imported.TerraxLighting = true;
 
 				var lightarray_id = $gameVariables.GetLightArrayId();
 				var lightarray_state = $gameVariables.GetLightArrayState();
+				var lightarray_color = $gameVariables.GetLightArrayColor();
 
 				for (var i = 0; i < $gameMap.events().length; i++) {
 					if ($gameMap.events()[i]) {
@@ -1222,8 +1230,10 @@ Imported.TerraxLighting = true;
 				}
 				lightarray_id = [];
 				lightarray_state = [];
+				lightarray_color = [];
 				$gameVariables.SetLightArrayId(lightarray_id);
 				$gameVariables.SetLightArrayState(lightarray_state);
+				$gameVariables.SetLightArrayColor(lightarray_color);
 			}
 		}
 
@@ -1888,6 +1898,7 @@ Imported.TerraxLighting = true;
 								var note_args = note.split(" ");
 								var note_command = note_args.shift().toLowerCase();
 
+
 								if (note_command == "light" || note_command == "fire" || note_command == "flashlight") {
 
 									var objectflicker = false;
@@ -2134,9 +2145,13 @@ Imported.TerraxLighting = true;
 													state = lightarray_state[j];
 
 													var newcolor = lightarray_color[j];
+
 													if (newcolor != 'defaultcolor') {
 														colorvalue = newcolor;
 													}
+
+													//Graphics.Debug("lightarrays",lightarray_id.length+' '+lightarray_state.length+' '+lightarray_color.length )
+
 													//var mapid = $gameMap.mapId();
 													//var eventid = $gameMap.events()[i]._eventId;
 
@@ -2235,8 +2250,6 @@ Imported.TerraxLighting = true;
 													ly1 = (ph / 2) + (lyjump * ph);
 												}
 											}
-
-
 
 											if (flashlight == true) {
 												this._maskBitmap.radialgradientFillRect2(lx1, ly1, 0, light_radius, colorvalue, '#000000', ldir, flashlength, flashwidth);
