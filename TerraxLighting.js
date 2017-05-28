@@ -1511,7 +1511,32 @@ Imported.TerraxLighting = true;
 									if (daynightseconds < 10) {
 										daynightseconds2 = '0' + daynightseconds;
 									}
-									Graphics.Debug('Debug Daynight system', daynightcycle + ' ' + daynightminutes + ' ' + daynightseconds2);
+									var hourvalue ='-';
+									var hourset = 'Not set';
+									if (daynightsavehours>0) {
+										hourvalue = $gameVariables.value(daynightsavehours);
+										hourset = daynightsavehours
+									}
+									var minutevalue ='-';
+									var minuteset = 'Not set';
+									if (daynightsavemin>0) {
+										minutevalue = $gameVariables.value(daynightsavemin);
+										minuteset = daynightsavemin
+									}
+									var secondvalue ='-';
+									var secondset = 'Not set';
+									if (daynightsavesec>0) {
+										secondvalue = $gameVariables.value(daynightsavesec);
+										secondset = daynightsavesec
+									}
+
+									var minutecounter = $gameVariables.value(daynightsavemin);
+									var secondcounter = $gameVariables.value(daynightsavesec);
+									Graphics.Debug('Debug Daynight system', daynightcycle + ' ' + daynightminutes + ' ' + daynightseconds2+
+									               '<br>' +'Hours  -> Variable: '+hourset+ '  Value: '+hourvalue+
+									               '<br>' +'Minutes-> Variable: '+minuteset+ '  Value: '+minutevalue+
+									               '<br>' +'Seconds-> Variable: '+secondset+ '  Value: '+secondvalue);
+
 								}
 								if (daynightsavemin > 0) {
 									$gameVariables.setValue(daynightsavemin, daynightminutes);
